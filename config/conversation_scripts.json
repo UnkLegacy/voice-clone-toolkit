@@ -30,6 +30,19 @@
     "voices": ["DougDoug", "Example_Grandma"],
     "script": "./conversation_scripts/example_script.txt"
   },
+  "long_script_file_example": {
+    "voices": [
+      "Professional_Narrator",
+      "DougDoug",
+      "Incredulous_Panic",
+      "Confident_Professional",
+      "Sohee",
+      "Example_Grandma",
+      "Ryan",
+      "Uncle_Fu"
+    ],
+    "script": "./conversation_scripts/example_long_script.txt"
+  },
   "mixed_profile_types": {
     "voices": ["DougDoug", "Sohee", "Incredulous_Panic", "Confident_Professional"],
     "script": [

@@ -74,7 +74,7 @@ VOICE_DESIGN_CLONE_PROFILES_CONFIG = "config/voice_design_clone_profiles.json"
 CONVERSATION_SCRIPTS_CONFIG = "config/conversation_scripts.json"
 
 # Default settings
-DEFAULT_SCRIPT = "mixed_profile_types"  # Which script to use by default
+DEFAULT_SCRIPT = "long_script_file_example"  # Which script to use by default
 PLAY_AUDIO = True                        # Set to False to skip audio playback
 CONCATENATE_AUDIO = True                 # Set to False to keep lines separate only
 BATCH_RUNS = 1                           # Number of complete runs to generate (for comparing different AI generations)
@@ -682,7 +682,7 @@ def main():
     
     # Handle --list-voices
     if args.list_voices:
-        voice_profiles = load_all_voice_profiles()
+        voice_profiles = load_all_profiles()
         list_all_voices(voice_profiles)
         return
     
