@@ -266,6 +266,32 @@ Voice profiles are stored in `config/voice_clone_profiles.json`. This file conta
 3. Place your reference audio file in the `input/` directory
 4. Update `DEFAULT_VOICE` in `clone_voice.py` or use `--voice MyVoice` flag
 
+### Custom Voice Profiles Configuration
+
+Custom voice profiles are stored in `config/custom_voice_profiles.json`. These profiles use predefined speaker models from Qwen3-TTS:
+
+```json
+{
+  "Ryan": {
+    "speaker": "Ryan",
+    "language": "English",
+    "description": "Dynamic male voice with strong rhythmic drive",
+    "single_text": "Hello everyone, I'm Ryan and welcome to my channel!",
+    "single_instruct": "Speak with energy and enthusiasm",
+    "batch_texts": [
+      "First sample text.",
+      "Second sample text."
+    ],
+    "batch_languages": ["English", "English"],
+    "batch_instructs": ["", "Happy"]
+  }
+}
+```
+
+**Default Profiles:** A reference configuration file (`config/default_custom_voice_profiles.json`) contains the original profiles in their native languages (Chinese, Japanese, Korean, English). The active `custom_voice_profiles.json` file is pre-configured with English translations for easier editing, while preserving the original character personalities and voice instructions.
+
+**Note:** While all speakers can speak English, characters like Vivian, Serena, Uncle_Fu, Dylan, and Eric maintain their Chinese accents, Ono_Anna retains a Japanese accent, and Sohee maintains a Korean accent as part of their character profiles.
+
 #### Using Text Files for Longer Content
 
 For longer texts (especially transcripts!), you can reference text files instead of inline strings:
