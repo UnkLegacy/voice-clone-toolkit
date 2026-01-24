@@ -27,7 +27,7 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libsndfile1 sox
+        sudo apt-get install -y libsndfile1 sox ffmpeg
     
     - name: Install dependencies
       run: |
