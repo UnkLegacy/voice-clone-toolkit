@@ -41,6 +41,13 @@ tqdm>=4.65.0
 # Linux/Mac: Required for audio playback
 pygame>=2.5.0
 
+# Audio format conversion (optional, for MP3 output)
+# Requires ffmpeg to be installed on your system:
+#   Windows: Download from https://ffmpeg.org/download.html
+#   Linux: sudo apt install ffmpeg
+#   Mac: brew install ffmpeg
+pydub>=0.25.0
+
 # Development Dependencies
 # ========================
 

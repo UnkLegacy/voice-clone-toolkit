@@ -21,6 +21,7 @@ All scripts are located in the `src/` directory:
 - **src/voice_design.py** - Design custom voices using natural language descriptions
 - **src/voice_design_clone.py** - Combine voice design with cloning for consistent voices
 - **src/custom_voice.py** - Generate speech with custom voice models
+- **src/convert_audio_format.py** - Convert audio files between formats (WAV, MP3, etc.)
 
 ## 📋 Table of Contents
 
@@ -51,6 +52,46 @@ All scripts are located in the `src/` directory:
 - **Progress Tracking**: Visual progress bars with tqdm integration
 - **Audio Playback**: Automatic playback of generated audio (optional)
 - **Multiple Profiles**: Store and switch between multiple voice profiles easily
+- **Multiple Audio Formats**: Output as WAV or MP3 with configurable bitrate
+
+## 🎵 Audio Format Support
+
+The toolkit supports both WAV (lossless) and MP3 (compressed) output formats:
+
+### WAV Format (Default)
+- **Pros**: Lossless quality, no compression artifacts, faster generation
+- **Cons**: Large file sizes (~10MB per minute of audio)
+- **Use when**: You need maximum quality or plan to edit the audio further
+
+### MP3 Format
+- **Pros**: ~90% smaller file sizes, easier to share and store
+- **Cons**: Lossy compression (quality loss), requires `pydub` and `ffmpeg`
+- **Use when**: Generating many files, sharing online, or storage is limited
+
+### Using MP3 Output
+
+**Requirements:**
+1. Install `pydub`: `pip install pydub`
+2. Install `ffmpeg`:
+   - **Windows**: Download from https://ffmpeg.org/download.html and add to PATH
+   - **Linux**: `sudo apt install ffmpeg`
+   - **Mac**: `brew install ffmpeg`
+
+**Usage:**
+```bash
+# Generate conversation as MP3
+python src/clone_voice_conversation.py --output-format mp3
+
+# Use higher bitrate for better quality
+python src/clone_voice_conversation.py --output-format mp3 --bitrate 320k
+
+# Convert existing WAV files to MP3
+python src/convert_audio_format.py output/Conversations/ --format mp3 --recursive
+```
+
+**File Size Comparison:**
+- 10-minute conversation: ~100MB (WAV) vs ~10MB (MP3 at 192k)
+- 100 dialogue lines: ~1GB (WAV) vs ~100MB (MP3 at 192k)
 
 ## 🔧 Installation
 

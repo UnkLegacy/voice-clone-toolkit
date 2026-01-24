@@ -40,6 +40,13 @@ except ImportError:
     tqdm = None
 
 try:
+    from pydub import AudioSegment
+    PYDUB_AVAILABLE = True
+except ImportError:
+    PYDUB_AVAILABLE = False
+    # Don't print warning here - only if user tries to use MP3
+
+try:
     from pygame import mixer  # type: ignore
     mixer.init()
     def playsound(filepath: str):
@@ -231,15 +238,61 @@ def save_wav(filepath: str, audio_data: np.ndarray, sample_rate: int):
         wav_file.writeframes(audio_data.tobytes())
 
 
-def concatenate_audio_files(audio_files: List[str], output_file: str, sample_rate: int, silence_duration: float = 0.3):
+def save_audio(filepath: str, audio_data: np.ndarray, sample_rate: int, output_format: str = "wav", bitrate: str = "192k"):
+    """
+    Save audio data to file in specified format (WAV or MP3).
+    
+    Args:
+        filepath: Output file path (extension will be changed to match format)
+        audio_data: Audio data as numpy array
+        sample_rate: Sample rate in Hz
+        output_format: Output format ("wav" or "mp3")
+        bitrate: Bitrate for MP3 encoding (e.g., "192k", "320k")
+    
+    Returns:
+        str: Final output filepath (with correct extension)
+    """
+    # Always save as WAV first
+    wav_path = str(Path(filepath).with_suffix('.wav'))
+    save_wav(wav_path, audio_data, sample_rate)
+    
+    # If MP3 requested, convert
+    if output_format.lower() == "mp3":
+        if not PYDUB_AVAILABLE:
+            print_progress("Warning: pydub not available. Saving as WAV instead.")
+            print_progress("Install pydub with: pip install pydub")
+            print_progress("Also requires ffmpeg to be installed on your system.")
+            return wav_path
+        
+        mp3_path = str(Path(filepath).with_suffix('.mp3'))
+        try:
+            audio = AudioSegment.from_wav(wav_path)
+            audio.export(mp3_path, format="mp3", bitrate=bitrate)
+            # Delete WAV file after successful MP3 conversion
+            os.remove(wav_path)
+            return mp3_path
+        except Exception as e:
+            print_progress(f"Warning: MP3 conversion failed ({e}). Keeping WAV file.")
+            return wav_path
+    
+    return wav_path
+
+
+def concatenate_audio_files(audio_files: List[str], output_file: str, sample_rate: int, silence_duration: float = 0.3, output_format: str = "wav", bitrate: str = "192k"):
     """
     Concatenate multiple audio files with optional silence between them.
+    Supports both WAV and MP3 input/output files.
     
     Args:
         audio_files: List of audio file paths to concatenate
         output_file: Output file path for concatenated audio
         sample_rate: Sample rate in Hz
         silence_duration: Duration of silence between audio clips in seconds
+        output_format: Output format ("wav" or "mp3")
+        bitrate: Bitrate for MP3 encoding (e.g., "192k", "320k")
+    
+    Returns:
+        str: Final output filepath
     """
     print_progress(f"Concatenating {len(audio_files)} audio files...")
     
@@ -248,17 +301,26 @@ def concatenate_audio_files(audio_files: List[str], output_file: str, sample_rat
     
     concatenated = []
     for i, audio_file in enumerate(audio_files):
-        with wave.open(audio_file, 'rb') as wav:
-            audio_data = np.frombuffer(wav.readframes(wav.getnframes()), dtype=np.int16)
-            concatenated.append(audio_data)
-            
-            # Add silence between clips (but not after the last one)
-            if i < len(audio_files) - 1:
-                concatenated.append(silence)
+        # Handle both WAV and MP3 input files
+        if audio_file.endswith('.mp3') and PYDUB_AVAILABLE:
+            # Use pydub for MP3 files
+            audio_segment = AudioSegment.from_mp3(audio_file)
+            audio_data = np.array(audio_segment.get_array_of_samples(), dtype=np.int16)
+        else:
+            # Use wave for WAV files
+            with wave.open(audio_file, 'rb') as wav:
+                audio_data = np.frombuffer(wav.readframes(wav.getnframes()), dtype=np.int16)
+        
+        concatenated.append(audio_data)
+        
+        # Add silence between clips (but not after the last one)
+        if i < len(audio_files) - 1:
+            concatenated.append(silence)
     
     full_audio = np.concatenate(concatenated)
-    save_wav(output_file, full_audio, sample_rate)
-    print_progress(f"Concatenated audio saved to: {output_file}")
+    final_path = save_audio(output_file, full_audio, sample_rate, output_format, bitrate)
+    print_progress(f"Concatenated audio saved to: {final_path}")
+    return final_path
 
 
 def load_all_profiles() -> Dict[str, Any]:
@@ -482,7 +544,9 @@ def generate_conversation(
     script_lines: List[Tuple[str, str]],
     voice_prompts: Dict[str, Any],
     output_dir: str,
-    conversation_name: str
+    conversation_name: str,
+    output_format: str = "wav",
+    bitrate: str = "192k"
 ) -> List[str]:
     """
     Generate audio for each line in the conversation script.
@@ -493,6 +557,8 @@ def generate_conversation(
         voice_prompts: Dictionary of voice prompts
         output_dir: Output directory for audio files
         conversation_name: Name of the conversation (for file naming)
+        output_format: Output format ("wav" or "mp3")
+        bitrate: Bitrate for MP3 encoding (e.g., "192k", "320k")
         
     Returns:
         List of generated audio file paths
@@ -524,11 +590,11 @@ def generate_conversation(
                     voice_clone_prompt=voice_prompts[voice],
                 )
             
-            # Save the line
-            output_file = f"{output_dir}/{conversation_name}_line_{i:03d}_{voice}.wav"
-            save_wav(output_file, wavs[0], sr)
-            audio_files.append(output_file)
-            print_progress(f"  ✓ Saved: {output_file}")
+            # Save the line (extension will be set by save_audio)
+            output_file = f"{output_dir}/{conversation_name}_line_{i:03d}_{voice}"
+            final_path = save_audio(output_file, wavs[0], sr, output_format, bitrate)
+            audio_files.append(final_path)
+            print_progress(f"  ✓ Saved: {final_path}")
             
         except Exception as e:
             print_progress(f"Error generating line {i}: {e}")
@@ -570,6 +636,8 @@ Examples:
   python src/clone_voice_conversation.py --list-voices                  # List all available voices
   python src/clone_voice_conversation.py --no-play                      # Skip audio playback
   python src/clone_voice_conversation.py --no-concatenate               # Keep lines separate only
+  python src/clone_voice_conversation.py --output-format mp3            # Save as MP3 instead of WAV
+  python src/clone_voice_conversation.py --output-format mp3 --bitrate 320k  # MP3 with high bitrate
         """
     )
     
@@ -609,6 +677,21 @@ Examples:
         type=int,
         default=None,
         help=f"Number of complete runs to generate for comparison (default: {BATCH_RUNS}). Creates run_1/, run_2/, etc. subdirectories"
+    )
+    
+    parser.add_argument(
+        "--output-format",
+        type=str,
+        choices=["wav", "mp3"],
+        default="wav",
+        help="Output audio format (default: wav). MP3 requires pydub and ffmpeg."
+    )
+    
+    parser.add_argument(
+        "--bitrate",
+        type=str,
+        default="192k",
+        help="Bitrate for MP3 encoding (default: 192k). Examples: 128k, 192k, 320k"
     )
     
     return parser.parse_args()
@@ -713,6 +796,7 @@ def main():
             print(f"WITH {batch_runs} BATCH RUNS")
         print("="*60)
         print_progress(f"Voices: {', '.join(voices)}")
+        print_progress(f"Output format: {args.output_format.upper()}" + (f" ({args.bitrate})" if args.output_format == "mp3" else ""))
         print_progress(f"Audio playback: {play_audio_enabled}")
         print_progress(f"Concatenate audio: {concatenate_enabled}")
         if batch_runs > 1:
@@ -773,7 +857,9 @@ def main():
                 script_lines=script_lines,
                 voice_prompts=voice_prompts,
                 output_dir=output_dir,
-                conversation_name=script_name
+                conversation_name=script_name,
+                output_format=args.output_format,
+                bitrate=args.bitrate
             )
             
             if not audio_files:
@@ -791,14 +877,23 @@ def main():
                 else:
                     print("CONCATENATING AUDIO")
                 print("="*60)
-                concatenated_file = f"{output_dir}/{script_name}_full.wav"
+                concatenated_file = f"{output_dir}/{script_name}_full"
                 
                 # Get sample rate from first audio file
-                with wave.open(audio_files[0], 'rb') as wav:
-                    sample_rate = wav.getframerate()
+                if audio_files[0].endswith('.mp3') and PYDUB_AVAILABLE:
+                    # Use pydub for MP3
+                    audio_segment = AudioSegment.from_mp3(audio_files[0])
+                    sample_rate = audio_segment.frame_rate
+                else:
+                    # Use wave for WAV
+                    with wave.open(audio_files[0], 'rb') as wav:
+                        sample_rate = wav.getframerate()
                 
-                concatenate_audio_files(audio_files, concatenated_file, sample_rate)
-                last_concatenated_file = concatenated_file
+                final_concat_path = concatenate_audio_files(
+                    audio_files, concatenated_file, sample_rate, 
+                    output_format=args.output_format, bitrate=args.bitrate
+                )
+                last_concatenated_file = final_concat_path
             
             if batch_runs > 1:
                 print("\n" + "-"*80)

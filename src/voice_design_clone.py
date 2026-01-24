@@ -28,6 +28,13 @@ except ImportError:
     tqdm = None
 
 try:
+    from pydub import AudioSegment
+    PYDUB_AVAILABLE = True
+except ImportError:
+    PYDUB_AVAILABLE = False
+    # Don't print warning here - only if user tries to use MP3
+
+try:
     from pygame import mixer  # type: ignore
     mixer.init()
     def playsound(filepath: str):
@@ -170,6 +177,29 @@ def save_wav_pygame(filepath: str, audio_data: np.ndarray, sample_rate: int):
         wav_file.writeframes(audio_data.tobytes())
 
 
+def save_audio(filepath: str, audio_data: np.ndarray, sample_rate: int, output_format: str = "wav", bitrate: str = "192k"):
+    """Save audio data to file in specified format (WAV or MP3)."""
+    wav_path = str(Path(filepath).with_suffix('.wav'))
+    save_wav_pygame(wav_path, audio_data, sample_rate)
+    
+    if output_format.lower() == "mp3":
+        if not PYDUB_AVAILABLE:
+            print_progress("Warning: pydub not available. Saving as WAV instead.")
+            return wav_path
+        
+        mp3_path = str(Path(filepath).with_suffix('.mp3'))
+        try:
+            audio = AudioSegment.from_wav(wav_path)
+            audio.export(mp3_path, format="mp3", bitrate=bitrate)
+            os.remove(wav_path)
+            return mp3_path
+        except Exception as e:
+            print_progress(f"Warning: MP3 conversion failed ({e}). Keeping WAV file.")
+            return wav_path
+    
+    return wav_path
+
+
 def load_design_model(model_path: str = "Qwen_Models/Qwen3-TTS-12Hz-1.7B-VoiceDesign") -> Qwen3TTSModel:
     """
     Load the Qwen3-TTS VoiceDesign model with progress indication.
@@ -294,8 +324,8 @@ def create_voice_design_reference(
     print_progress(f"Reference generation completed in {duration:.2f} seconds")
     
     print_progress(f"Saving reference to {output_file}...")
-    save_wav_pygame(output_file, wavs[0], sr)
-    print_progress(f"Reference audio saved successfully!")
+    final_path = save_audio(output_file, wavs[0], sr, "wav", "192k")  # Always save reference as WAV
+    print_progress(f"Reference audio saved successfully: {final_path}")
     
     return wavs, sr
 
@@ -305,7 +335,9 @@ def generate_single_clone(
     text: str,
     language: str,
     voice_clone_prompt,
-    output_file: str
+    output_file: str,
+    output_format: str = "wav",
+    bitrate: str = "192k"
 ) -> tuple:
     """
     Generate a single audio using the voice clone prompt.
@@ -345,8 +377,8 @@ def generate_single_clone(
     print_progress(f"Clone generation completed in {duration:.2f} seconds")
     
     print_progress(f"Saving to {output_file}...")
-    save_wav_pygame(output_file, wavs[0], sr)
-    print_progress(f"Audio saved successfully!")
+    final_path = save_audio(output_file, wavs[0], sr, output_format, bitrate)
+    print_progress(f"Audio saved successfully: {final_path}")
     
     return wavs, sr
 
@@ -356,7 +388,9 @@ def generate_batch_clone(
     texts: list,
     languages: list,
     voice_clone_prompt,
-    output_prefix: str = "output/Voice_Design_Clone/clone_batch"
+    output_prefix: str = "output/Voice_Design_Clone/clone_batch",
+    output_format: str = "wav",
+    bitrate: str = "192k"
 ) -> tuple:
     """
     Generate multiple audio samples using the voice clone prompt (batch mode).
@@ -396,8 +430,9 @@ def generate_batch_clone(
     # Save all outputs
     print_progress("Saving audio files...")
     for i, wav in enumerate(wavs):
-        output_file = f"{output_prefix}_{i}.wav"
-        save_wav_pygame(output_file, wav, sr)
+        output_file = f"{output_prefix}_{i}"
+        final_path = save_audio(output_file, wav, sr, output_format, bitrate)
+        print_progress(f"  Saved: {final_path}")
         print_progress(f"  Saved: {output_file}")
     
     return wavs, sr
@@ -494,6 +529,21 @@ Examples:
         "--list-voices",
         action="store_true",
         help="List available voice profiles and exit"
+    )
+    
+    parser.add_argument(
+        "--output-format",
+        type=str,
+        choices=["wav", "mp3"],
+        default="wav",
+        help="Output audio format (default: wav). MP3 requires pydub and ffmpeg."
+    )
+    
+    parser.add_argument(
+        "--bitrate",
+        type=str,
+        default="192k",
+        help="Bitrate for MP3 encoding (default: 192k). Examples: 128k, 192k, 320k"
     )
     
     return parser.parse_args()
@@ -646,13 +696,16 @@ def main():
                             text=text,
                             language=profile['language'],
                             voice_clone_prompt=voice_clone_prompt,
-                            output_file=output_file
+                            output_file=output_file,
+                            output_format=args.output_format,
+                            bitrate=args.bitrate
                         )
                         
                         # Play first single clone (only last run)
                         if play_audio_enabled and i == 1 and run_num == batch_runs:
                             print("\n" + "="*60)
-                            play_audio(output_file)
+                            single_file_with_ext = str(Path(output_file).with_suffix(f'.{args.output_format}'))
+                            play_audio(single_file_with_ext)
             
             # Step 4: Generate batch clones using the reusable prompt
             if run_batch:
@@ -672,13 +725,15 @@ def main():
                         texts=batch_texts,
                         languages=batch_languages,
                         voice_clone_prompt=voice_clone_prompt,
-                        output_prefix=f"{base_output_dir}/{profile_name}_batch"
+                        output_prefix=f"{base_output_dir}/{profile_name}_batch",
+                        output_format=args.output_format,
+                        bitrate=args.bitrate
                     )
                     
                     # Play first batch clone (only last run)
                     if play_audio_enabled and run_num == batch_runs:
                         print("\n" + "="*60)
-                        play_audio(f"{base_output_dir}/{profile_name}_batch_0.wav")
+                        play_audio(f"{base_output_dir}/{profile_name}_batch_0.{args.output_format}")
             
             if batch_runs > 1:
                 print("\n" + "-"*80)

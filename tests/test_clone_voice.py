@@ -20,8 +20,10 @@ from src.clone_voice import (
     load_text_from_file_or_string,
     ensure_output_dir,
     save_wav_pygame,
+    save_audio,
     list_voice_profiles,
     parse_args,
+    PYDUB_AVAILABLE,
 )
 
 
@@ -228,6 +230,55 @@ class TestListVoiceProfiles(unittest.TestCase):
         self.assertTrue(any("Voice2" in str(arg) for arg in call_args))
 
 
+class TestSaveAudio(unittest.TestCase):
+    """Test audio file saving with format conversion."""
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        self.test_dir = tempfile.mkdtemp()
+        
+    def tearDown(self):
+        """Clean up test fixtures."""
+        shutil.rmtree(self.test_dir)
+    
+    def test_save_wav_format(self):
+        """Test saving in WAV format."""
+        output_file = os.path.join(self.test_dir, "test")
+        audio_data = np.array([0, 1000, -1000, 0], dtype=np.int16)
+        
+        result_path = save_audio(output_file, audio_data, 24000, output_format="wav")
+        
+        self.assertTrue(result_path.endswith('.wav'))
+        self.assertTrue(os.path.exists(result_path))
+    
+    @unittest.skipIf(not PYDUB_AVAILABLE, "pydub not available")
+    def test_save_mp3_format(self):
+        """Test saving in MP3 format."""
+        output_file = os.path.join(self.test_dir, "test")
+        audio_data = np.array([0, 1000, -1000, 0], dtype=np.int16)
+        
+        result_path = save_audio(output_file, audio_data, 24000, output_format="mp3", bitrate="192k")
+        
+        self.assertTrue(result_path.endswith('.mp3'))
+        self.assertTrue(os.path.exists(result_path))
+        # WAV file should be deleted after conversion
+        wav_path = os.path.join(self.test_dir, "test.wav")
+        self.assertFalse(os.path.exists(wav_path))
+    
+    @unittest.skipIf(not PYDUB_AVAILABLE, "pydub not available")
+    def test_mp3_bitrate_option(self):
+        """Test MP3 encoding with different bitrate."""
+        output_file = os.path.join(self.test_dir, "test")
+        # Generate 1 second of audio
+        audio_data = np.array([0] * 24000, dtype=np.int16)
+        
+        # Test with 320k bitrate
+        result_path = save_audio(output_file, audio_data, 24000, output_format="mp3", bitrate="320k")
+        
+        self.assertTrue(result_path.endswith('.mp3'))
+        self.assertTrue(os.path.exists(result_path))
+
+
 class TestParseArgs(unittest.TestCase):
     """Test command-line argument parsing."""
     
@@ -271,6 +322,24 @@ class TestParseArgs(unittest.TestCase):
         """Test parsing --list-voices flag."""
         args = parse_args(self.test_profiles)
         self.assertTrue(args.list_voices)
+    
+    @patch('sys.argv', ['Clone_Voice.py', '--output-format', 'mp3'])
+    def test_parse_output_format_mp3(self):
+        """Test parsing --output-format mp3."""
+        args = parse_args(self.test_profiles)
+        self.assertEqual(args.output_format, 'mp3')
+    
+    @patch('sys.argv', ['Clone_Voice.py', '--output-format', 'wav'])
+    def test_parse_output_format_wav(self):
+        """Test parsing --output-format wav."""
+        args = parse_args(self.test_profiles)
+        self.assertEqual(args.output_format, 'wav')
+    
+    @patch('sys.argv', ['Clone_Voice.py', '--bitrate', '320k'])
+    def test_parse_bitrate(self):
+        """Test parsing --bitrate argument."""
+        args = parse_args(self.test_profiles)
+        self.assertEqual(args.bitrate, '320k')
 
 
 if __name__ == '__main__':
