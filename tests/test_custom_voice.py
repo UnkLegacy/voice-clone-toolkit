@@ -25,7 +25,7 @@ from src.custom_voice import (
     load_custom_voice_profiles,
     ensure_output_dir,
     save_wav_pygame,
-    list_speaker_profiles,
+    list_voice_profiles,
     parse_args,
 )
 
@@ -159,11 +159,11 @@ class TestSaveWav(unittest.TestCase):
         self.assertTrue(os.path.exists(nested_path))
 
 
-class TestListSpeakerProfiles(unittest.TestCase):
-    """Test listing speaker profiles."""
+class TestListVoiceProfiles(unittest.TestCase):
+    """Test listing voice profiles."""
     
     def test_list_profiles(self):
-        """Test listing speaker profiles."""
+        """Test listing voice profiles."""
         test_profiles = {
             "TestSpeaker1": {
                 "speaker": "TestSpeaker1",
@@ -183,9 +183,9 @@ class TestListSpeakerProfiles(unittest.TestCase):
         
         # Should not raise an exception
         try:
-            list_speaker_profiles(test_profiles)
+            list_voice_profiles(test_profiles)
         except Exception as e:
-            self.fail(f"list_speaker_profiles raised an exception: {e}")
+            self.fail(f"list_voice_profiles raised an exception: {e}")
 
 
 class TestParseArgs(unittest.TestCase):
@@ -219,14 +219,14 @@ class TestParseArgs(unittest.TestCase):
         
         self.assertEqual(args.speaker, 'Ryan')
     
-    def test_parse_list_speakers(self):
-        """Test parsing --list-speakers flag."""
-        test_args = ['--list-speakers']
+    def test_parse_list_voices(self):
+        """Test parsing --list-voices flag."""
+        test_args = ['--list-voices']
         sys.argv = ['test'] + test_args
         
         args = parse_args(self.test_profiles)
         
-        self.assertTrue(args.list_speakers)
+        self.assertTrue(args.list_voices)
     
     def test_parse_no_batch(self):
         """Test parsing --no-batch flag."""

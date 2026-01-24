@@ -5,7 +5,7 @@ This script demonstrates how to use the Qwen3-TTS CustomVoice model to generate
 speech with different speakers and languages.
 
 Speaker profiles are configured in config/custom_voice_profiles.json
-Use --list-speakers to see all available speakers and their descriptions.
+Use --list-voices to see all available voice profiles and their descriptions.
 """
 
 import time
@@ -360,7 +360,7 @@ Examples:
   python src/custom_voice.py --speaker Ryan         # Use Ryan speaker profile
   python src/custom_voice.py --no-batch             # Skip batch generation
   python src/custom_voice.py --only-single          # Only run single generation
-  python src/custom_voice.py --list-speakers        # List available speaker profiles
+  python src/custom_voice.py --list-voices          # List available voice profiles
         """
     )
     
@@ -410,18 +410,18 @@ Examples:
     )
     
     parser.add_argument(
-        "--list-speakers",
+        "--list-voices",
         action="store_true",
-        help="List available speaker profiles and exit"
+        help="List available voice profiles and exit"
     )
     
     return parser.parse_args()
 
 
-def list_speaker_profiles(voice_profiles: Dict[str, Any]):
-    """List all available speaker profiles."""
+def list_voice_profiles(voice_profiles: Dict[str, Any]):
+    """List all available voice profiles."""
     print("\n" + "="*60)
-    print("AVAILABLE SPEAKER PROFILES")
+    print("AVAILABLE VOICE PROFILES")
     print("="*60)
     for name, profile in voice_profiles.items():
         print(f"\n{name}:")
@@ -447,9 +447,9 @@ def main():
     # Parse command-line arguments
     args = parse_args(voice_profiles)
     
-    # Handle --list-speakers
-    if args.list_speakers:
-        list_speaker_profiles(voice_profiles)
+    # Handle --list-voices
+    if args.list_voices:
+        list_voice_profiles(voice_profiles)
         return
     
     # Determine what to run

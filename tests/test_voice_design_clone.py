@@ -25,7 +25,7 @@ from src.voice_design_clone import (
     load_voice_design_clone_profiles,
     ensure_output_dir,
     save_wav_pygame,
-    list_design_clone_profiles,
+    list_voice_profiles,
     parse_args,
 )
 
@@ -159,14 +159,14 @@ class TestSaveWav(unittest.TestCase):
         self.assertTrue(os.path.exists(nested_path))
 
 
-class TestListDesignCloneProfiles(unittest.TestCase):
-    """Test listing voice design + clone profiles."""
+class TestListVoiceProfiles(unittest.TestCase):
+    """Test listing voice profiles."""
     
     def test_list_profiles(self):
-        """Test listing voice design + clone profiles."""
+        """Test listing voice profiles."""
         test_profiles = {
-            "TestCharacter1": {
-                "description": "Test character 1",
+            "TestVoice1": {
+                "description": "Test voice 1",
                 "reference": {
                     "text": "Reference text",
                     "instruct": "Instruction",
@@ -176,8 +176,8 @@ class TestListDesignCloneProfiles(unittest.TestCase):
                 "batch_texts": ["Batch 1"],
                 "language": "English"
             },
-            "TestCharacter2": {
-                "description": "Test character 2",
+            "TestVoice2": {
+                "description": "Test voice 2",
                 "reference": {
                     "text": "参考文本",
                     "instruct": "指令",
@@ -191,9 +191,9 @@ class TestListDesignCloneProfiles(unittest.TestCase):
         
         # Should not raise an exception
         try:
-            list_design_clone_profiles(test_profiles)
+            list_voice_profiles(test_profiles)
         except Exception as e:
-            self.fail(f"list_design_clone_profiles raised an exception: {e}")
+            self.fail(f"list_voice_profiles raised an exception: {e}")
 
 
 class TestParseArgs(unittest.TestCase):
@@ -235,14 +235,14 @@ class TestParseArgs(unittest.TestCase):
         
         self.assertEqual(args.profile, 'Nervous_Teen')
     
-    def test_parse_list_profiles(self):
-        """Test parsing --list-profiles flag."""
-        test_args = ['--list-profiles']
+    def test_parse_list_voices(self):
+        """Test parsing --list-voices flag."""
+        test_args = ['--list-voices']
         sys.argv = ['test'] + test_args
         
         args = parse_args(self.test_profiles)
         
-        self.assertTrue(args.list_profiles)
+        self.assertTrue(args.list_voices)
     
     def test_parse_no_batch(self):
         """Test parsing --no-batch flag."""

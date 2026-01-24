@@ -6,7 +6,7 @@ This script demonstrates how to combine Voice Design and Voice Clone capabilitie
 2. Build a reusable clone prompt from that reference
 3. Generate new content with the designed voice consistently
 
-This workflow is ideal when you want a consistent character voice across many lines
+This workflow is ideal when you want a consistent voice across many lines
 without re-extracting features every time.
 """
 
@@ -441,7 +441,7 @@ Examples:
   python src/voice_design_clone.py --profile Nervous_Teen  # Use specific profile
   python src/voice_design_clone.py --no-batch           # Skip batch generation
   python src/voice_design_clone.py --only-single        # Only run single generation
-  python src/voice_design_clone.py --list-profiles      # List available profiles
+  python src/voice_design_clone.py --list-voices        # List available voice profiles
         """
     )
     
@@ -491,18 +491,18 @@ Examples:
     )
     
     parser.add_argument(
-        "--list-profiles",
+        "--list-voices",
         action="store_true",
-        help="List available voice design + clone profiles and exit"
+        help="List available voice profiles and exit"
     )
     
     return parser.parse_args()
 
 
-def list_design_clone_profiles(voice_profiles: Dict[str, Any]):
-    """List all available voice design + clone profiles."""
+def list_voice_profiles(voice_profiles: Dict[str, Any]):
+    """List all available voice profiles."""
     print("\n" + "="*60)
-    print("AVAILABLE VOICE DESIGN + CLONE PROFILES")
+    print("AVAILABLE VOICE PROFILES")
     print("="*60)
     for name, profile in voice_profiles.items():
         print(f"\n{name}:")
@@ -530,9 +530,9 @@ def main():
     # Parse command-line arguments
     args = parse_args(voice_profiles)
     
-    # Handle --list-profiles
-    if args.list_profiles:
-        list_design_clone_profiles(voice_profiles)
+    # Handle --list-voices
+    if args.list_voices:
+        list_voice_profiles(voice_profiles)
         return
     
     # Determine what to run

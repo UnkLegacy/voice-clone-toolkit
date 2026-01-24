@@ -1,23 +1,23 @@
 """
 Qwen3-TTS Voice Clone Conversation Script Generator
 
-This script enables you to create conversations between multiple actors using
+This script enables you to create conversations between multiple voices using
 ANY voice profile type. It combines all voice generation capabilities with
-conversation scripting to generate realistic multi-character dialogues.
+conversation scripting to generate realistic multi-voice dialogues.
 
 Features:
 - Support for ALL profile types: voice clones, custom voices, voice designs, and voice design+clone
 - Mix different voice types in the same conversation (e.g., DougDoug + Sohee + Incredulous_Panic)
-- Parse conversation scripts with [Actor] dialogue format
+- Parse conversation scripts with [Voice] dialogue format
 - Generate audio for each line in order
 - Optional audio concatenation for full conversation playback
 - Support for both inline scripts and script files
 
-Actor profiles are automatically loaded from:
+Voice profiles are automatically loaded from:
 - config/voice_clone_profiles.json (reference audio + transcript)
 - config/custom_voice_profiles.json (pre-built speaker voices)
 - config/voice_design_profiles.json (custom voice characteristics)
-- config/voice_design_clone_profiles.json (designed character voices)
+- config/voice_design_clone_profiles.json (designed voices)
 """
 
 import time
@@ -145,13 +145,13 @@ def load_text_from_file_or_string(value: Union[str, list]) -> Union[str, list]:
 
 def parse_script_format(script_text: str) -> List[Tuple[str, str]]:
     """
-    Parse script text with [Actor] dialogue format into a list of (actor, line) tuples.
+    Parse script text with [Voice] dialogue format into a list of (voice, line) tuples.
     
     Args:
-        script_text: Script text with lines in format "[Actor] dialogue text"
-        
+        script_text: Script text with lines in format "[Voice] dialogue text"
+    
     Returns:
-        List of (actor_name, dialogue_text) tuples
+        List of (voice_name, dialogue_text) tuples
     """
     lines = []
     pattern = r'\[([^\]]+)\]\s*(.+)'
@@ -163,9 +163,9 @@ def parse_script_format(script_text: str) -> List[Tuple[str, str]]:
             
         match = re.match(pattern, line)
         if match:
-            actor = match.group(1).strip()
+            voice = match.group(1).strip()
             dialogue = match.group(2).strip()
-            lines.append((actor, dialogue))
+            lines.append((voice, dialogue))
         else:
             print_progress(f"Warning: Skipping malformed line: {line[:50]}...")
     
@@ -174,13 +174,13 @@ def parse_script_format(script_text: str) -> List[Tuple[str, str]]:
 
 def parse_script_list(script_list: List[str]) -> List[Tuple[str, str]]:
     """
-    Parse script from a list format with [Actor] dialogue.
+    Parse script from a list format with [Voice] dialogue.
     
     Args:
-        script_list: List of strings in format "[Actor] dialogue text"
-        
+        script_list: List of strings in format "[Voice] dialogue text"
+    
     Returns:
-        List of (actor_name, dialogue_text) tuples
+        List of (voice_name, dialogue_text) tuples
     """
     lines = []
     pattern = r'\[([^\]]+)\]\s*(.+)'
@@ -192,9 +192,9 @@ def parse_script_list(script_list: List[str]) -> List[Tuple[str, str]]:
             
         match = re.match(pattern, line)
         if match:
-            actor = match.group(1).strip()
+            voice = match.group(1).strip()
             dialogue = match.group(2).strip()
-            lines.append((actor, dialogue))
+            lines.append((voice, dialogue))
         else:
             print_progress(f"Warning: Skipping malformed line: {line[:50]}...")
     
@@ -264,10 +264,10 @@ def concatenate_audio_files(audio_files: List[str], output_file: str, sample_rat
 def load_all_profiles() -> Dict[str, Any]:
     """
     Load all profile types and merge them into a single dictionary.
-    Tracks the profile type for each actor.
+    Tracks the profile type for each voice.
     
     Returns:
-        Dictionary with actor names as keys and profile data (with 'profile_type' field) as values
+        Dictionary with voice names as keys and profile data (with 'profile_type' field) as values
     """
     all_profiles = {}
     
@@ -344,26 +344,26 @@ def create_actor_prompts(
     
     Args:
         base_model: The loaded Base model (for cloning)
-        actors: List of actor names to prepare
+        voices: List of voice names to prepare
         voice_profiles: Dictionary of voice profiles (all types)
         temp_dir: Temporary directory for generated reference audio
         
     Returns:
-        Dictionary mapping actor names to their voice clone prompts
+        Dictionary mapping voice names to their voice clone prompts
     """
-    print_progress(f"Creating voice prompts for {len(actors)} actors...")
+    print_progress(f"Creating voice prompts for {len(voices)} voices...")
     Path(temp_dir).mkdir(parents=True, exist_ok=True)
-    actor_prompts = {}
+    voice_prompts = {}
     
-    for actor in actors:
-        if actor not in voice_profiles:
-            print_progress(f"Warning: Actor '{actor}' not found in voice profiles!")
+    for voice in voices:
+        if voice not in voice_profiles:
+            print_progress(f"Warning: Voice '{voice}' not found in voice profiles!")
             continue
         
-        profile = voice_profiles[actor]
+        profile = voice_profiles[voice]
         profile_type = profile.get('profile_type', 'voice_clone')
         
-        print_progress(f"Creating prompt for {actor} (type: {profile_type})...")
+        print_progress(f"Creating prompt for {voice} (type: {profile_type})...")
         
         try:
             if profile_type == 'voice_clone':
@@ -372,7 +372,7 @@ def create_actor_prompts(
                 ref_text = load_text_from_file_or_string(profile["sample_transcript"])
                 
                 if not os.path.exists(ref_audio):
-                    print_progress(f"Warning: Reference audio not found for '{actor}': {ref_audio}")
+                    print_progress(f"Warning: Reference audio not found for '{voice}': {ref_audio}")
                     continue
                 
                 prompt = base_model.create_voice_clone_prompt(
@@ -382,11 +382,11 @@ def create_actor_prompts(
                 
             elif profile_type == 'custom_voice':
                 # Custom voice profile - generate reference audio, then create prompt
-                print_progress(f"  Generating custom voice reference for {actor}...")
+                print_progress(f"  Generating custom voice reference for {voice}...")
                 custom_model = load_custom_voice_model()
                 
                 ref_text = profile['single_text']
-                ref_audio_path = f"{temp_dir}/{actor}_custom_ref.wav"
+                ref_audio_path = f"{temp_dir}/{voice}_custom_ref.wav"
                 
                 wavs, sr = custom_model.generate_custom_voice(
                     text=ref_text,
@@ -403,11 +403,11 @@ def create_actor_prompts(
                 
             elif profile_type == 'voice_design':
                 # Voice design profile - generate reference audio, then create prompt
-                print_progress(f"  Generating voice design reference for {actor}...")
+                print_progress(f"  Generating voice design reference for {voice}...")
                 design_model = load_voice_design_model()
                 
                 ref_text = profile['single_text']
-                ref_audio_path = f"{temp_dir}/{actor}_design_ref.wav"
+                ref_audio_path = f"{temp_dir}/{voice}_design_ref.wav"
                 
                 wavs, sr = design_model.generate_voice_design(
                     text=ref_text,
@@ -423,12 +423,12 @@ def create_actor_prompts(
                 
             elif profile_type == 'voice_design_clone':
                 # Voice design + clone profile - generate reference, then create prompt
-                print_progress(f"  Generating voice design+clone reference for {actor}...")
+                print_progress(f"  Generating voice design+clone reference for {voice}...")
                 design_model = load_voice_design_model()
                 
                 ref_data = profile['reference']
                 ref_text = ref_data['text']
-                ref_audio_path = f"{temp_dir}/{actor}_design_clone_ref.wav"
+                ref_audio_path = f"{temp_dir}/{voice}_design_clone_ref.wav"
                 
                 wavs, sr = design_model.generate_voice_design(
                     text=ref_text,
@@ -442,17 +442,17 @@ def create_actor_prompts(
                     ref_text=ref_text,
                 )
             else:
-                print_progress(f"Warning: Unknown profile type '{profile_type}' for actor '{actor}'")
+                print_progress(f"Warning: Unknown profile type '{profile_type}' for voice '{voice}'")
                 continue
             
-            actor_prompts[actor] = prompt
-            print_progress(f"  ✓ {actor} prompt created")
-            
+            voice_prompts[voice] = prompt
+            print_progress(f"  ✓ {voice} prompt created")
+        
         except Exception as e:
-            print_progress(f"Error creating prompt for '{actor}': {e}")
+            print_progress(f"Error creating prompt for '{voice}': {e}")
             continue
     
-    return actor_prompts
+    return voice_prompts
 
 
 def load_custom_voice_model(model_path: str = "Qwen_Models/Qwen3-TTS-12Hz-1.7B-CustomVoice") -> Qwen3TTSModel:
@@ -480,7 +480,7 @@ def load_voice_design_model(model_path: str = "Qwen_Models/Qwen3-TTS-12Hz-1.7B-V
 def generate_conversation(
     model: Qwen3TTSModel,
     script_lines: List[Tuple[str, str]],
-    actor_prompts: Dict[str, Any],
+    voice_prompts: Dict[str, Any],
     output_dir: str,
     conversation_name: str
 ) -> List[str]:
@@ -489,8 +489,8 @@ def generate_conversation(
     
     Args:
         model: The loaded Qwen3TTSModel
-        script_lines: List of (actor, dialogue) tuples
-        actor_prompts: Dictionary of actor voice prompts
+        script_lines: List of (voice, dialogue) tuples
+        voice_prompts: Dictionary of voice prompts
         output_dir: Output directory for audio files
         conversation_name: Name of the conversation (for file naming)
         
@@ -500,12 +500,12 @@ def generate_conversation(
     print_progress(f"Generating conversation with {len(script_lines)} lines...")
     audio_files = []
     
-    for i, (actor, dialogue) in enumerate(script_lines, 1):
-        if actor not in actor_prompts:
-            print_progress(f"Warning: Skipping line {i} - actor '{actor}' has no voice prompt")
+    for i, (voice, dialogue) in enumerate(script_lines, 1):
+        if voice not in voice_prompts:
+            print_progress(f"Warning: Skipping line {i} - voice '{voice}' has no voice prompt")
             continue
         
-        print_progress(f"Line {i}/{len(script_lines)}: [{actor}] {dialogue[:50]}{'...' if len(dialogue) > 50 else ''}")
+        print_progress(f"Line {i}/{len(script_lines)}: [{voice}] {dialogue[:50]}{'...' if len(dialogue) > 50 else ''}")
         
         try:
             # Generate audio for this line
@@ -514,18 +514,18 @@ def generate_conversation(
                     wavs, sr = model.generate_voice_clone(
                         text=dialogue,
                         language="English",
-                        voice_clone_prompt=actor_prompts[actor],
+                        voice_clone_prompt=voice_prompts[voice],
                     )
                     pbar.update(1)
             else:
                 wavs, sr = model.generate_voice_clone(
                     text=dialogue,
                     language="English",
-                    voice_clone_prompt=actor_prompts[actor],
+                    voice_clone_prompt=voice_prompts[voice],
                 )
             
             # Save the line
-            output_file = f"{output_dir}/{conversation_name}_line_{i:03d}_{actor}.wav"
+            output_file = f"{output_dir}/{conversation_name}_line_{i:03d}_{voice}.wav"
             save_wav(output_file, wavs[0], sr)
             audio_files.append(output_file)
             print_progress(f"  ✓ Saved: {output_file}")
@@ -567,6 +567,7 @@ Examples:
   python src/clone_voice_conversation.py --script example_conversation  # Use specific script
   python src/clone_voice_conversation.py --batch-runs 3                 # Generate 3 different conversation versions
   python src/clone_voice_conversation.py --list-scripts                 # List available scripts
+  python src/clone_voice_conversation.py --list-voices                  # List all available voices
   python src/clone_voice_conversation.py --no-play                      # Skip audio playback
   python src/clone_voice_conversation.py --no-concatenate               # Keep lines separate only
         """
@@ -583,6 +584,12 @@ Examples:
         "--list-scripts",
         action="store_true",
         help="List available conversation scripts and exit"
+    )
+    
+    parser.add_argument(
+        "--list-voices",
+        action="store_true",
+        help="List all available voice profiles from all types and exit"
     )
     
     parser.add_argument(
@@ -614,13 +621,45 @@ def list_scripts(conversation_scripts: Dict[str, Any]):
     print("="*60)
     for name, script_data in conversation_scripts.items():
         print(f"\n{name}:")
-        print(f"  Actors: {', '.join(script_data.get('actors', []))}")
+        print(f"  Voices: {', '.join(script_data.get('actors', []))}")
         script = script_data.get('script', [])
         if isinstance(script, str):
             lines_count = len([l for l in script.split('\n') if l.strip()])
         else:
             lines_count = len(script)
         print(f"  Lines: {lines_count}")
+    print("="*60 + "\n")
+
+
+def list_all_voices(voice_profiles: Dict[str, Any]):
+    """List all available voice profiles from all profile types."""
+    print("\n" + "="*60)
+    print("AVAILABLE VOICE PROFILES (ALL TYPES)")
+    print("="*60)
+    
+    # Group by profile type
+    by_type = {}
+    for name, profile in voice_profiles.items():
+        profile_type = profile.get('profile_type', 'unknown')
+        if profile_type not in by_type:
+            by_type[profile_type] = []
+        by_type[profile_type].append(name)
+    
+    # Display by type
+    type_names = {
+        'voice_clone': 'Voice Clone Profiles',
+        'custom_voice': 'Custom Voice Profiles',
+        'voice_design': 'Voice Design Profiles',
+        'voice_design_clone': 'Voice Design+Clone Profiles'
+    }
+    
+    for ptype, names in sorted(by_type.items()):
+        print(f"\n{type_names.get(ptype, ptype.upper())}:")
+        for name in sorted(names):
+            print(f"  - {name}")
+    
+    print("\n" + "="*60)
+    print(f"Total: {len(voice_profiles)} voice profiles available")
     print("="*60 + "\n")
 
 
@@ -641,6 +680,12 @@ def main():
         list_scripts(conversation_scripts)
         return
     
+    # Handle --list-voices
+    if args.list_voices:
+        voice_profiles = load_all_voice_profiles()
+        list_all_voices(voice_profiles)
+        return
+    
     # Determine settings
     script_name = args.script if args.script else DEFAULT_SCRIPT
     play_audio_enabled = PLAY_AUDIO and not args.no_play
@@ -653,7 +698,7 @@ def main():
         sys.exit(1)
     
     script_data = conversation_scripts[script_name]
-    actors = script_data.get("actors", [])
+    voices = script_data.get("actors", [])
     script_content = script_data.get("script", [])
     
     # Load script content from file if needed
@@ -667,7 +712,7 @@ def main():
         if batch_runs > 1:
             print(f"WITH {batch_runs} BATCH RUNS")
         print("="*60)
-        print_progress(f"Actors: {', '.join(actors)}")
+        print_progress(f"Voices: {', '.join(voices)}")
         print_progress(f"Audio playback: {play_audio_enabled}")
         print_progress(f"Concatenate audio: {concatenate_enabled}")
         if batch_runs > 1:
@@ -701,19 +746,19 @@ def main():
                 output_dir = f"output/Conversations/{script_name}"
             ensure_output_dir(output_dir)
             
-            # Create voice prompts for all actors
+            # Create voice prompts for all voices
             if run_num == 1 or batch_runs > 1:
                 print("\n" + "="*60)
                 if batch_runs > 1:
-                    print(f"RUN {run_num} - PREPARING ACTOR VOICES")
+                    print(f"RUN {run_num} - PREPARING VOICES")
                 else:
-                    print("PREPARING ACTOR VOICES")
+                    print("PREPARING VOICES")
                 print("="*60)
             
-            actor_prompts = create_actor_prompts(model, actors, voice_profiles, temp_dir=output_dir)
+            voice_prompts = create_voice_prompts(model, voices, voice_profiles, temp_dir=output_dir)
             
-            if not actor_prompts:
-                print_progress("Error: No valid actor prompts created!")
+            if not voice_prompts:
+                print_progress("Error: No valid voice prompts created!")
                 continue
             
             # Generate conversation
@@ -726,7 +771,7 @@ def main():
             audio_files = generate_conversation(
                 model=model,
                 script_lines=script_lines,
-                actor_prompts=actor_prompts,
+                voice_prompts=voice_prompts,
                 output_dir=output_dir,
                 conversation_name=script_name
             )

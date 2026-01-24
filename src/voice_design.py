@@ -347,7 +347,7 @@ Examples:
   python src/voice_design.py --profile Incredulous_Panic  # Use specific profile
   python src/voice_design.py --no-batch                   # Skip batch generation
   python src/voice_design.py --only-single                # Only run single generation
-  python src/voice_design.py --list-profiles              # List available profiles
+  python src/voice_design.py --list-voices                # List available voice profiles
         """
     )
     
@@ -397,18 +397,18 @@ Examples:
     )
     
     parser.add_argument(
-        "--list-profiles",
+        "--list-voices",
         action="store_true",
-        help="List available voice design profiles and exit"
+        help="List available voice profiles and exit"
     )
     
     return parser.parse_args()
 
 
-def list_design_profiles(voice_profiles: Dict[str, Any]):
-    """List all available voice design profiles."""
+def list_voice_profiles(voice_profiles: Dict[str, Any]):
+    """List all available voice profiles."""
     print("\n" + "="*60)
-    print("AVAILABLE VOICE DESIGN PROFILES")
+    print("AVAILABLE VOICE PROFILES")
     print("="*60)
     for name, profile in voice_profiles.items():
         print(f"\n{name}:")
@@ -440,9 +440,9 @@ def main():
     # Parse command-line arguments
     args = parse_args(voice_profiles)
     
-    # Handle --list-profiles
-    if args.list_profiles:
-        list_design_profiles(voice_profiles)
+    # Handle --list-voices
+    if args.list_voices:
+        list_voice_profiles(voice_profiles)
         return
     
     # Determine what to run
