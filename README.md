@@ -544,7 +544,7 @@ Grandma:
 ============================================================
 ```
 
-### Example 6: Compare Mode (Quality Testing)
+### Example 7: Compare Mode (Quality Testing)
 
 ```bash
 # Generate the same text as the reference audio to compare quality
@@ -561,7 +561,7 @@ In compare mode, the script will:
 2. Create a cloned version of the reference audio
 3. Allow you to compare the original vs. cloned audio side-by-side
 
-### Example 7: Process Multiple Voices
+### Example 8: Process Multiple Voices
 
 ```bash
 # Generate outputs for multiple voice profiles in one run
