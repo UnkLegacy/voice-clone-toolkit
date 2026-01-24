@@ -1,0 +1,5 @@
+This is an example of loading text from a file instead of putting it directly in the JSON config.
+
+You can write longer texts here, with multiple paragraphs, and it's much easier to edit than cramming everything into a JSON string.
+
+This text file will be loaded when the voice profile references it with: "single_text": "./texts/example_single.txt"

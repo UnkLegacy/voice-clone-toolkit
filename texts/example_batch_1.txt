@@ -1,0 +1,1 @@
+This is the first batch text file. Each file in the batch_texts array will be processed as a separate audio generation.

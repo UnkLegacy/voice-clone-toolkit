@@ -1,0 +1,57 @@
+# Qwen3-TTS Voice Clone Scripts - Requirements
+# Python 3.8 or higher required
+
+# Core Dependencies
+# =================
+
+# PyTorch - Deep learning framework
+# Install CPU version OR GPU version (with CUDA) depending on your system
+# 
+# CUDA 11.8 (RTX 30xx, RTX 40xx series):
+#   pip install torch --index-url https://download.pytorch.org/whl/cu118
+#
+# CUDA 12.1 (RTX 40xx series):
+#   pip install torch --index-url https://download.pytorch.org/whl/cu121
+#
+# CUDA 12.8 (RTX 50xx series - requires nightly build):
+#   pip3 install --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cu128
+#   pip install --pre torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128
+#
+# CPU only:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+#
+torch>=2.0.0
+
+# NumPy - Numerical computing
+numpy>=1.24.0
+
+# Qwen3-TTS - Text-to-speech model
+# Note: Install from official source or GitHub
+# pip install git+https://github.com/QwenLM/Qwen-Audio.git
+qwen-tts>=0.1.0
+
+# Optional Dependencies
+# =====================
+
+# Progress bars (highly recommended)
+tqdm>=4.65.0
+
+# Audio playback (recommended for testing)
+# Windows: Falls back to winsound if not available
+# Linux/Mac: Required for audio playback
+pygame>=2.5.0
+
+# Development Dependencies
+# ========================
+
+# Testing and code coverage
+coverage>=7.0.0
+
+# Code quality (optional)
+# flake8>=6.0.0
+# black>=23.0.0
+# mypy>=1.0.0
+
+# Documentation (optional)
+# sphinx>=6.0.0
+# sphinx-rtd-theme>=1.2.0

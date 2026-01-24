@@ -1,0 +1,34 @@
+{
+  "DougDoug": {
+    "voice_sample_file": "./input/DougDoug.wav",
+    "sample_transcript": "./texts/dougdoug_transcript.txt",
+    "single_text": "What's up Twitch chat?!  I'm DougDoug!  And today we're going to do some crazy wacky fucking stupid shit in GTA 5!",
+    "batch_texts": [
+      "Hey! This is DougDoug. Where we solve problems no one has.",
+      "Today we're going to create three AI characters and have them fight to the death.",
+      "Buckle your seatbelts, chat! Today we're going to death road!",
+      "Ok, I went and trained a GPT AI on hundreds of conversations that I have had on Youtube and Twitch."
+    ]
+  },
+  "Grandma": {
+    "voice_sample_file": "./input/Grandma.wav",
+    "sample_transcript": "Can sit and talk to me and I'll ignore the other two. What is he? Orange? Yeah, yeah. Yeah, I hear him. Oh yeah.",
+    "single_text": "I don't think that PC will ever be back in stock, I imagine if it ever does, bots will snatch it up before a person can, heh.",
+    "batch_texts": [
+      "I don't think that PC will ever be back in stock, I imagine if it ever does, bots will snatch it up before a person can, heh.",
+      "Monitors will be cheaper around this time of year I think because new monitor models are coming out 'soon'(tm).",
+      "Plus Samsung always has good .edu deals.",
+      "If looking for a new monitor, I always check rtings.com and Monitors Unboxed (on youtube)."
+    ]
+  },
+  "Example_Grandma": {
+    "voice_sample_file": "./input/Grandma.wav",
+    "sample_transcript": "./texts/example_transcript.txt",
+    "single_text": "./texts/example_single.txt",
+    "batch_texts": [
+      "This is an example of a batch text.",
+      "./texts/example_batch_1.txt",
+      "./texts/dougdoug_transcript.txt"
+    ]
+  }
+}

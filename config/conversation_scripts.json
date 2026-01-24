@@ -1,0 +1,33 @@
+{
+  "example_conversation": {
+    "actors": ["DougDoug", "Example_Grandma"],
+    "script": [
+      "[DougDoug] Hi Grandma, how are you doing today?",
+      "[Example_Grandma] Oh hi DouglassDouglass, I'm doing good. How about you?",
+      "[DougDoug] I'm great now that I'm talking with you! Thanks for asking!",
+      "[Example_Grandma] Well that's wonderful dear. You always know how to brighten up my day.",
+      "[DougDoug] So what have you been up to lately?",
+      "[Example_Grandma] Oh you know, just the usual. Watching some shows, doing some reading.",
+      "[DougDoug] That sounds nice and relaxing!",
+      "[Example_Grandma] It is dear, it really is."
+    ]
+  },
+  "tech_discussion": {
+    "actors": ["DougDoug", "Example_Grandma"],
+    "script": [
+      "[DougDoug] Hey Grandma, did you see that new graphics card that came out?",
+      "[Example_Grandma] I don't think that PC will ever be back in stock, I imagine if it ever does, bots will snatch it up before a person can, heh.",
+      "[DougDoug] You're probably right about that. The bot problem is getting worse every year!",
+      "[Example_Grandma] Monitors will be cheaper around this time of year I think because new monitor models are coming out 'soon'.",
+      "[DougDoug] Oh that's a great point! I should wait a bit before upgrading then.",
+      "[Example_Grandma] Plus Samsung always has good .edu deals.",
+      "[DougDoug] Wait, you know about student discounts? That's impressive!",
+      "[Example_Grandma] If looking for a new monitor, I always check rtings.com and Monitors Unboxed on youtube.",
+      "[DougDoug] Wow Grandma, you really know your tech! I'm impressed!"
+    ]
+  },
+  "script_file_example": {
+    "actors": ["DougDoug", "Example_Grandma"],
+    "script": "./scripts/example_script.txt"
+  }
+}
