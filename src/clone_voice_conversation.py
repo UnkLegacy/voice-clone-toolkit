@@ -32,36 +32,40 @@ import torch
 import wave
 
 # Import utilities from our new modular structure
-# Handle both relative imports (when run as package) and absolute imports (when run directly)
-try:
-    from .utils.progress import print_progress, print_error, handle_fatal_error, handle_processing_error
-    from .utils.audio_utils import save_audio, play_audio, ensure_output_dir
-    from .utils.config_loader import (
-        load_json_config, 
-        load_voice_clone_profiles, 
-        load_custom_voice_profiles,
-        load_voice_design_profiles,
-        load_voice_design_clone_profiles
-    )
-    from .utils.model_utils import load_voice_clone_model, load_custom_voice_model, load_voice_design_model
-    from .utils.cli_args import create_base_parser, add_common_args, get_generation_modes
-    from .utils.file_utils import validate_file_exists, read_text_file
-except ImportError:
-    # Fallback to absolute imports when run directly
-    sys.path.insert(0, str(Path(__file__).parent))
-    
-    from utils.progress import print_progress, print_error, handle_fatal_error, handle_processing_error
-    from utils.audio_utils import save_audio, play_audio, ensure_output_dir
-    from utils.config_loader import (
-        load_json_config, 
-        load_voice_clone_profiles, 
-        load_custom_voice_profiles,
-        load_voice_design_profiles,
-        load_voice_design_clone_profiles
-    )
-    from utils.model_utils import load_voice_clone_model, load_custom_voice_model, load_voice_design_model
-    from utils.cli_args import create_base_parser, add_common_args, get_generation_modes
-    from utils.file_utils import validate_file_exists, read_text_file
+def import_utils():
+    """Import utility modules with fallback for direct execution."""
+    try:
+        from . import utils
+        return utils
+    except ImportError:
+        sys.path.insert(0, str(Path(__file__).parent))
+        import utils
+        return utils
+
+# Single import - no duplicates!
+utils = import_utils()
+
+# Access utility functions
+print_progress = utils.print_progress
+print_error = utils.print_error
+handle_fatal_error = utils.handle_fatal_error
+handle_processing_error = utils.handle_processing_error
+save_audio = utils.save_audio
+play_audio = utils.play_audio
+ensure_output_dir = utils.ensure_output_dir
+load_json_config = utils.load_json_config
+load_voice_clone_profiles = utils.load_voice_clone_profiles
+load_custom_voice_profiles = utils.load_custom_voice_profiles
+load_voice_design_profiles = utils.load_voice_design_profiles
+load_voice_design_clone_profiles = utils.load_voice_design_clone_profiles
+load_voice_clone_model = utils.load_voice_clone_model
+load_custom_voice_model = utils.load_custom_voice_model
+load_voice_design_model = utils.load_voice_design_model
+create_base_parser = utils.create_base_parser
+add_common_args = utils.add_common_args
+get_generation_modes = utils.get_generation_modes
+validate_file_exists = utils.validate_file_exists
+read_text_file = utils.read_text_file
 
 from qwen_tts import Qwen3TTSModel
 
