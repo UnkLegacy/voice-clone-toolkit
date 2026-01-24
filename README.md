@@ -1,9 +1,9 @@
-# Qwen3-TTS Voice Clone Scripts
+# Voice Clone Toolkit
 
-[![Tests](https://github.com/UnkLegacy/Qwen3-TTS_Scripts/actions/workflows/tests.yml/badge.svg)](https://github.com/UnkLegacy/Qwen3-TTS_Scripts/actions/workflows/tests.yml)
+[![Tests](https://github.com/UnkLegacy/voice-clone-toolkit/actions/workflows/tests.yml/badge.svg)](https://github.com/UnkLegacy/voice-clone-toolkit/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A collection of Python scripts for voice cloning and text-to-speech generation using the Qwen3-TTS models.
+Community toolkit for voice cloning and text-to-speech generation using Qwen3-TTS models. Unofficial scripts and utilities for working with the Qwen3-TTS project.
 
 ## 🔗 Based On
 
@@ -58,8 +58,8 @@ All scripts are located in the `src/` directory:
 
 ```bash
 # Clone repository
-git clone https://github.com/UnkLegacy/Qwen3-TTS_Scripts.git
-cd Qwen3-TTS_Scripts
+git clone https://github.com/UnkLegacy/voice-clone-toolkit.git
+cd voice-clone-toolkit
 
 # Create virtual environment (recommended)
 python -m venv qwen-env

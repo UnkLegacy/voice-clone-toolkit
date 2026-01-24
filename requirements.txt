@@ -1,4 +1,4 @@
-# Qwen3-TTS Voice Clone Scripts - Requirements
+# Voice Clone Toolkit - Requirements
 # Python 3.10 or higher required (PyTorch dependency)
 
 # Core Dependencies

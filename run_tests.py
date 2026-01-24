@@ -1,5 +1,5 @@
 """
-Test runner for Qwen3-TTS Scripts
+Test runner for Voice Clone Toolkit
 
 Discovers and runs all unit tests in the tests/ directory.
 """

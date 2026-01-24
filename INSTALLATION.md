@@ -1,6 +1,6 @@
 # Installation Guide
 
-Quick start guide for installing Qwen3-TTS Voice Clone Scripts.
+Quick start guide for installing Voice Clone Toolkit.
 
 ## Prerequisites
 
@@ -13,8 +13,8 @@ Quick start guide for installing Qwen3-TTS Voice Clone Scripts.
 ### 1. Clone or Download Repository
 
 ```bash
-git clone https://github.com/UnkLegacy/Qwen3-TTS_Scripts.git
-cd Qwen3-TTS_Scripts
+git clone https://github.com/UnkLegacy/voice-clone-toolkit.git
+cd voice-clone-toolkit
 ```
 
 ### 2. Create Virtual Environment (Recommended)
@@ -221,7 +221,7 @@ On Windows, the script will fall back to `winsound` if pygame is not available.
 Make sure you're running from the project root directory:
 
 ```bash
-cd /path/to/Qwen3-TTS_Scripts
+cd /path/to/voice-clone-toolkit
 python src/clone_voice.py --help
 ```
 

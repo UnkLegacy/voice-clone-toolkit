@@ -1,11 +1,11 @@
 # Project Structure
 
-Complete directory structure and file organization for the Qwen3-TTS Scripts project.
+Complete directory structure and file organization for the Voice Clone Toolkit project.
 
 ## Root Directory
 
 ```
-Qwen3-TTS_Scripts/
+voice-clone-toolkit/
 ├── .gitignore                    # Git ignore rules
 ├── .github/                      # GitHub configuration
 │   └── workflows/

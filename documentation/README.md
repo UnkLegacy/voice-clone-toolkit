@@ -1,6 +1,6 @@
 # Documentation
 
-Comprehensive documentation for the Qwen3-TTS Scripts project.
+Comprehensive documentation for the Voice Clone Toolkit project.
 
 ## 📚 Available Documentation
 

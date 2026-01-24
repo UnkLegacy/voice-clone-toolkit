@@ -1,6 +1,6 @@
 # Testing Guide
 
-This document provides information about testing the Qwen3-TTS Scripts.
+This document provides information about testing the Voice Clone Toolkit.
 
 ## Quick Start
 
@@ -190,7 +190,7 @@ The repository is configured with a GitHub Actions workflow (`.github/workflows/
 
 **View test results:**
 - Check the **Actions** tab in the GitHub repository
-- Look for the [![Tests](https://github.com/UnkLegacy/Qwen3-TTS_Scripts/actions/workflows/tests.yml/badge.svg)](https://github.com/UnkLegacy/Qwen3-TTS_Scripts/actions/workflows/tests.yml) badge in the README
+- Look for the [![Tests](https://github.com/UnkLegacy/voice-clone-toolkit/actions/workflows/tests.yml/badge.svg)](https://github.com/UnkLegacy/voice-clone-toolkit/actions/workflows/tests.yml) badge in the README
 
 The workflow configuration is available at `.github/workflows/tests.yml`:
 

@@ -1,3 +1,3 @@
 """
-Test suite for Qwen3-TTS Scripts
+Test suite for Voice Clone Toolkit
 """
