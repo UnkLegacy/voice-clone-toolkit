@@ -11,49 +11,40 @@ Use --list-voices to see all available voice profiles and their descriptions.
 import time
 import sys
 import os
-import torch
 import numpy as np
-import wave
 from pathlib import Path
 from typing import Optional, Dict, Any, Union
 import argparse
-import json
 
+# Import utilities from our new modular structure
+# Handle both relative imports (when run as package) and absolute imports (when run directly)
+try:
+    from .utils.progress import print_progress, print_error, handle_fatal_error, handle_processing_error
+    from .utils.audio_utils import save_audio, play_audio, ensure_output_dir
+    from .utils.config_loader import load_custom_voice_profiles
+    from .utils.model_utils import load_custom_voice_model
+    from .utils.cli_args import create_base_parser, add_common_args, add_voice_selection_args, get_generation_modes
+    from .utils.file_utils import validate_file_exists
+except ImportError:
+    # Fallback to absolute imports when run directly
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent))
+    
+    from utils.progress import print_progress, print_error, handle_fatal_error, handle_processing_error
+    from utils.audio_utils import save_audio, play_audio, ensure_output_dir
+    from utils.config_loader import load_custom_voice_profiles
+    from utils.model_utils import load_custom_voice_model
+    from utils.cli_args import create_base_parser, add_common_args, add_voice_selection_args, get_generation_modes
+    from utils.file_utils import validate_file_exists
+
+from qwen_tts import Qwen3TTSModel
+
+# Optional dependency for progress bars
 try:
     from tqdm import tqdm
 except ImportError:
-    print("Warning: tqdm not installed. Install with 'pip install tqdm' for progress bars.")
     tqdm = None
-
-try:
-    from pydub import AudioSegment
-    PYDUB_AVAILABLE = True
-except ImportError:
-    PYDUB_AVAILABLE = False
-    # Don't print warning here - only if user tries to use MP3
-
-try:
-    from pygame import mixer  # type: ignore
-    mixer.init()
-    def playsound(filepath: str):
-        """Play audio using pygame."""
-        mixer.music.load(filepath)
-        mixer.music.play()
-        while mixer.music.get_busy():
-            import time
-            time.sleep(0.1)
-except (ImportError, Exception):
-    try:
-        import winsound  # type: ignore
-        def playsound(filepath: str):
-            """Play audio using Windows built-in winsound."""
-            winsound.PlaySound(filepath, winsound.SND_FILENAME)
-    except ImportError:
-        print("Warning: No audio playback library available.")
-        print("Install with 'pip install pygame' for audio playback.")
-        playsound = None
-
-from qwen_tts import Qwen3TTSModel
 
 
 # =============================================================================
@@ -75,182 +66,12 @@ BATCH_RUNS = 1             # Number of complete runs to generate (for comparing 
 # =============================================================================
 
 
-def load_custom_voice_profiles(config_path: str = CUSTOM_VOICE_PROFILES_CONFIG) -> Dict[str, Any]:
-    """
-    Load custom voice profiles from JSON configuration file.
-    
-    Args:
-        config_path: Path to the JSON configuration file
-        
-    Returns:
-        Dictionary of custom voice profiles
-    """
-    if not os.path.exists(config_path):
-        print_progress(f"Error: Custom voice profiles config not found: {config_path}")
-        print_progress("Creating default config file...")
-        
-        # Create default config
-        default_profiles = {
-            "Ryan": {
-                "speaker": "Ryan",
-                "language": "English",
-                "description": "Dynamic male voice with strong rhythmic drive",
-                "single_text": "Hello everyone, this is a test of the custom voice system.",
-                "single_instruct": "",
-                "batch_texts": [
-                    "This is the first example.",
-                    "This is the second example."
-                ],
-                "batch_languages": ["English", "English"],
-                "batch_instructs": ["", "Happy"]
-            }
-        }
-        
-        # Ensure config directory exists
-        Path(config_path).parent.mkdir(parents=True, exist_ok=True)
-        
-        with open(config_path, 'w', encoding='utf-8') as f:
-            json.dump(default_profiles, f, indent=2, ensure_ascii=False)
-        
-        print_progress(f"Created default config at: {config_path}")
-        print_progress("Please edit this file to add your custom voice profiles.")
-        return default_profiles
-    
-    try:
-        with open(config_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except json.JSONDecodeError as e:
-        print_progress(f"Error parsing JSON config: {e}")
-        sys.exit(1)
-    except Exception as e:
-        print_progress(f"Error loading custom voice profiles: {e}")
-        sys.exit(1)
 
 
-def print_progress(message: str):
-    """Print a progress message with formatting."""
-    print(f"[INFO] {message}")
 
 
-def ensure_output_dir(output_dir: str = "output/Custom_Voice"):
-    """
-    Ensure the output directory exists.
-    
-    Args:
-        output_dir: Directory path to create
-    """
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
 
 
-def save_wav_pygame(filepath: str, audio_data: np.ndarray, sample_rate: int):
-    """
-    Save audio data to WAV file using wave module (no soundfile dependency).
-    
-    Args:
-        filepath: Output file path
-        audio_data: Audio data as numpy array
-        sample_rate: Sample rate in Hz
-    """
-    # Ensure parent directory exists
-    Path(filepath).parent.mkdir(parents=True, exist_ok=True)
-    
-    # Ensure audio_data is in the correct format
-    if audio_data.dtype != np.int16:
-        # Convert float to int16
-        if audio_data.dtype in [np.float32, np.float64]:
-            audio_data = np.clip(audio_data, -1.0, 1.0)
-            audio_data = (audio_data * 32767).astype(np.int16)
-        else:
-            audio_data = audio_data.astype(np.int16)
-    
-    # Write WAV file
-    with wave.open(filepath, 'wb') as wav_file:
-        wav_file.setnchannels(1)  # Mono
-        wav_file.setsampwidth(2)  # 16-bit
-        wav_file.setframerate(sample_rate)
-        wav_file.writeframes(audio_data.tobytes())
-
-
-def save_audio(filepath: str, audio_data: np.ndarray, sample_rate: int, output_format: str = "wav", bitrate: str = "192k"):
-    """
-    Save audio data to file in specified format (WAV or MP3).
-    
-    Args:
-        filepath: Output file path (extension will be changed to match format)
-        audio_data: Audio data as numpy array
-        sample_rate: Sample rate in Hz
-        output_format: Output format ("wav" or "mp3")
-        bitrate: Bitrate for MP3 encoding (e.g., "192k", "320k")
-    
-    Returns:
-        str: Final output filepath (with correct extension)
-    """
-    # Always save as WAV first
-    wav_path = str(Path(filepath).with_suffix('.wav'))
-    save_wav_pygame(wav_path, audio_data, sample_rate)
-    
-    # If MP3 requested, convert
-    if output_format.lower() == "mp3":
-        if not PYDUB_AVAILABLE:
-            print_progress("Warning: pydub not available. Saving as WAV instead.")
-            print_progress("Install pydub with: pip install pydub")
-            print_progress("Also requires ffmpeg to be installed on your system.")
-            return wav_path
-        
-        mp3_path = str(Path(filepath).with_suffix('.mp3'))
-        try:
-            audio = AudioSegment.from_wav(wav_path)
-            audio.export(mp3_path, format="mp3", bitrate=bitrate)
-            # Delete WAV file after successful MP3 conversion
-            os.remove(wav_path)
-            return mp3_path
-        except Exception as e:
-            print_progress(f"Warning: MP3 conversion failed ({e}). Keeping WAV file.")
-            return wav_path
-    
-    return wav_path
-
-
-def load_model(model_path: str = "Qwen_Models/Qwen3-TTS-12Hz-1.7B-CustomVoice") -> Qwen3TTSModel:
-    """
-    Load the Qwen3-TTS model with progress indication.
-    
-    Args:
-        model_path: Path to the model directory
-        
-    Returns:
-        Loaded Qwen3TTSModel instance
-    """
-    print_progress("Checking CUDA availability...")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
-    if torch.cuda.is_available():
-        print_progress(f"Using GPU: {torch.cuda.get_device_name(0)}")
-    else:
-        print_progress("Using CPU (CUDA not available)")
-    
-    print_progress(f"Loading model from {model_path}...")
-    if tqdm:
-        # Create a simple progress indicator for model loading
-        with tqdm(total=1, desc="Loading model", unit="step") as pbar:
-            model = Qwen3TTSModel.from_pretrained(
-                model_path,
-                device_map={"": device},
-                dtype=torch.bfloat16,
-            )
-            pbar.update(1)
-    else:
-        model = Qwen3TTSModel.from_pretrained(
-            model_path,
-            device_map={"": device},
-            dtype=torch.bfloat16,
-        )
-    
-    print_progress("Model loaded successfully!")
-    print_progress(f"Supported speakers: {model.get_supported_speakers()}")
-    print_progress(f"Supported languages: {model.get_supported_languages()}")
-    
-    return model
 
 
 def generate_single_voice(
@@ -373,113 +194,26 @@ def generate_batch_voices(
     return wavs, sr
 
 
-def play_audio(filepath: str):
-    """
-    Play an audio file using playsound.
-    
-    Args:
-        filepath: Path to the audio file
-    """
-    if not os.path.exists(filepath):
-        print_progress(f"Warning: Audio file not found: {filepath}")
-        return
-    
-    if playsound is None:
-        print_progress("Warning: playsound not available. Cannot play audio.")
-        print_progress(f"Audio file saved at: {os.path.abspath(filepath)}")
-        return
-    
-    print_progress(f"Playing audio: {filepath}")
-    try:
-        playsound(filepath)
-        print_progress("Playback completed")
-    except Exception as e:
-        print_progress(f"Error playing audio: {e}")
-        print_progress(f"Audio file saved at: {os.path.abspath(filepath)}")
 
 
 def parse_args(voice_profiles: Dict[str, Any]):
-    """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(
+    """Parse command-line arguments using shared utilities."""
+    # Create parser with standard structure
+    parser = create_base_parser(
         description="Qwen3-TTS Custom Voice Generation Script",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=f"""
-Available voice profiles: {', '.join(voice_profiles.keys())}
-
-Examples:
-  python src/custom_voice.py                        # Use default settings from config
-  python src/custom_voice.py --speaker Ryan         # Use Ryan speaker profile
-  python src/custom_voice.py --no-batch             # Skip batch generation
-  python src/custom_voice.py --only-single          # Only run single generation
-  python src/custom_voice.py --list-voices          # List available voice profiles
-        """
+        script_name="src/custom_voice.py",
+        available_profiles=voice_profiles
     )
     
-    parser.add_argument(
-        "--speaker", "-s",
-        type=str,
-        default=None,
-        choices=list(voice_profiles.keys()),
-        help=f"Speaker profile to use (default: {DEFAULT_SPEAKER})"
+    # Add speaker selection arguments  
+    add_voice_selection_args(
+        parser, voice_profiles, DEFAULT_SPEAKER,
+        arg_name="speaker", arg_short="s",
+        help_text=f"Speaker profile to use (default: {DEFAULT_SPEAKER})"
     )
     
-    parser.add_argument(
-        "--no-single",
-        action="store_true",
-        help="Skip single voice generation"
-    )
-    
-    parser.add_argument(
-        "--no-batch",
-        action="store_true",
-        help="Skip batch voice generation"
-    )
-    
-    parser.add_argument(
-        "--only-single",
-        action="store_true",
-        help="Only run single generation (skip batch)"
-    )
-    
-    parser.add_argument(
-        "--only-batch",
-        action="store_true",
-        help="Only run batch generation (skip single)"
-    )
-    
-    parser.add_argument(
-        "--no-play",
-        action="store_true",
-        help="Skip audio playback"
-    )
-    
-    parser.add_argument(
-        "--batch-runs",
-        type=int,
-        default=None,
-        help=f"Number of complete runs to generate for comparison (default: {BATCH_RUNS}). Creates run_1/, run_2/, etc. subdirectories"
-    )
-    
-    parser.add_argument(
-        "--list-voices",
-        action="store_true",
-        help="List available voice profiles and exit"
-    )
-    
-    parser.add_argument(
-        "--output-format",
-        type=str,
-        choices=["wav", "mp3"],
-        default="wav",
-        help="Output audio format (default: wav). MP3 requires pydub and ffmpeg."
-    )
-    
-    parser.add_argument(
-        "--bitrate",
-        type=str,
-        default="192k",
-        help="Bitrate for MP3 encoding (default: 192k). Examples: 128k, 192k, 320k"
-    )
+    # Add all common arguments
+    add_common_args(parser, default_batch_runs=BATCH_RUNS, profile_type="speaker profiles")
     
     return parser.parse_args()
 
@@ -507,35 +241,40 @@ def list_voice_profiles(voice_profiles: Dict[str, Any]):
 
 def main():
     """Main function to run the TTS generation pipeline."""
-    # Load custom voice profiles from JSON config
-    voice_profiles = load_custom_voice_profiles()
-    
-    # Parse command-line arguments
-    args = parse_args(voice_profiles)
-    
-    # Handle --list-voices
-    if args.list_voices:
-        list_voice_profiles(voice_profiles)
-        return
-    
-    # Determine what to run
-    run_single = RUN_SINGLE and not args.no_single and not args.only_batch
-    run_batch = RUN_BATCH and not args.no_batch and not args.only_single
-    play_audio_enabled = PLAY_AUDIO and not args.no_play
-    batch_runs = args.batch_runs if args.batch_runs is not None else BATCH_RUNS
-    
-    # Determine which speaker to use
-    speaker_name = args.speaker if args.speaker else DEFAULT_SPEAKER
-    
-    if speaker_name not in voice_profiles:
-        print_progress(f"Error: Speaker profile '{speaker_name}' not found!")
-        print_progress(f"Available profiles: {', '.join(voice_profiles.keys())}")
-        sys.exit(1)
-    
-    profile = voice_profiles[speaker_name]
-    start_time = time.time()
-    
     try:
+        # Load custom voice profiles from JSON config
+        voice_profiles = load_custom_voice_profiles(CUSTOM_VOICE_PROFILES_CONFIG)
+        
+        # Parse command-line arguments
+        args = parse_args(voice_profiles)
+        
+        # Handle --list-voices
+        if args.list_voices:
+            list_voice_profiles(voice_profiles)
+            return
+        
+        # Determine what to run using shared utilities
+        run_single, run_batch = get_generation_modes(args)
+        
+        # Apply default overrides
+        if not RUN_SINGLE:
+            run_single = False
+        if not RUN_BATCH:
+            run_batch = False
+        
+        play_audio_enabled = PLAY_AUDIO and not args.no_play
+        batch_runs = args.batch_runs if args.batch_runs is not None else BATCH_RUNS
+        
+        # Determine which speaker to use
+        speaker_name = args.speaker if args.speaker else DEFAULT_SPEAKER
+        
+        if speaker_name not in voice_profiles:
+            print_error(f"Speaker profile '{speaker_name}' not found!")
+            print_progress(f"Available profiles: {', '.join(voice_profiles.keys())}")
+            sys.exit(1)
+        
+        profile = voice_profiles[speaker_name]
+        start_time = time.time()
         print("\n" + "="*60)
         print(f"CUSTOM VOICE GENERATION: {speaker_name}")
         if batch_runs > 1:
@@ -551,7 +290,9 @@ def main():
             print_progress(f"Batch runs: {batch_runs} (outputs will be in run_1/, run_2/, etc.)")
         
         # Load model
-        model = load_model()
+        model = load_custom_voice_model()
+        print_progress(f"Supported speakers: {model.get_supported_speakers()}")
+        print_progress(f"Supported languages: {model.get_supported_languages()}")
         
         # Process batch runs
         for run_num in range(1, batch_runs + 1):
@@ -641,10 +382,7 @@ def main():
         print("="*60)
         
     except Exception as e:
-        print(f"\n[ERROR] An error occurred: {e}", file=sys.stderr)
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+        handle_fatal_error(e, "running custom voice generation")
 
 
 if __name__ == "__main__":

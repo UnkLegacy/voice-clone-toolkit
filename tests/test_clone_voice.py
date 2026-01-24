@@ -16,15 +16,14 @@ import numpy as np
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.clone_voice import (
-    load_voice_profiles,
-    load_text_from_file_or_string,
-    ensure_output_dir,
-    save_wav_pygame,
-    save_audio,
     list_voice_profiles,
     parse_args,
-    PYDUB_AVAILABLE,
 )
+
+# Import utilities from the new modular structure
+from src.utils.config_loader import load_voice_clone_profiles
+from src.utils.file_utils import load_text_from_file_or_string
+from src.utils.audio_utils import ensure_output_dir, save_wav, save_audio, PYDUB_AVAILABLE
 
 
 class TestLoadVoiceProfiles(unittest.TestCase):
@@ -53,7 +52,7 @@ class TestLoadVoiceProfiles(unittest.TestCase):
         with open(self.config_path, 'w') as f:
             json.dump(test_profiles, f)
         
-        profiles = load_voice_profiles(self.config_path)
+        profiles = load_voice_clone_profiles(self.config_path)
         
         self.assertIn("TestVoice", profiles)
         self.assertEqual(profiles["TestVoice"]["sample_transcript"], "Test transcript")
@@ -61,7 +60,7 @@ class TestLoadVoiceProfiles(unittest.TestCase):
     def test_load_nonexistent_file(self):
         """Test loading from nonexistent file creates default."""
         nonexistent_path = os.path.join(self.test_dir, "nonexistent.json")
-        profiles = load_voice_profiles(nonexistent_path)
+        profiles = load_voice_clone_profiles(nonexistent_path)
         
         self.assertIn("Example", profiles)
         self.assertTrue(os.path.exists(nonexistent_path))
@@ -72,7 +71,7 @@ class TestLoadVoiceProfiles(unittest.TestCase):
             f.write("{invalid json}")
         
         with self.assertRaises(SystemExit):
-            load_voice_profiles(self.config_path)
+            load_voice_clone_profiles(self.config_path)
 
 
 class TestLoadTextFromFile(unittest.TestCase):
@@ -178,7 +177,7 @@ class TestSaveWav(unittest.TestCase):
         audio_data = np.array([0, 1000, -1000, 0], dtype=np.int16)
         sample_rate = 24000
         
-        save_wav_pygame(self.test_file, audio_data, sample_rate)
+        save_wav(self.test_file, audio_data, sample_rate)
         self.assertTrue(os.path.exists(self.test_file))
     
     def test_save_float_audio(self):
@@ -186,7 +185,7 @@ class TestSaveWav(unittest.TestCase):
         audio_data = np.array([0.0, 0.5, -0.5, 0.0], dtype=np.float32)
         sample_rate = 24000
         
-        save_wav_pygame(self.test_file, audio_data, sample_rate)
+        save_wav(self.test_file, audio_data, sample_rate)
         self.assertTrue(os.path.exists(self.test_file))
     
     def test_save_creates_parent_dirs(self):
@@ -194,7 +193,7 @@ class TestSaveWav(unittest.TestCase):
         nested_path = os.path.join(self.test_dir, "nested", "dir", "test.wav")
         audio_data = np.array([0, 1000], dtype=np.int16)
         
-        save_wav_pygame(nested_path, audio_data, 24000)
+        save_wav(nested_path, audio_data, 24000)
         self.assertTrue(os.path.exists(nested_path))
 
 

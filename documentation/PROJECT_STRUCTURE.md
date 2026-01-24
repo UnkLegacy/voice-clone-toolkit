@@ -27,7 +27,17 @@ voice-clone-toolkit/
 │   ├── clone_voice_conversation.py    # Conversation generation script
 │   ├── custom_voice.py                # Custom voice generation
 │   ├── voice_design.py                # Voice design script
-│   └── voice_design_clone.py          # Combined voice design + clone
+│   ├── voice_design_clone.py          # Combined voice design + clone
+│   ├── convert_audio_format.py        # Audio format conversion utility
+│   └── utils/                         # Shared utility modules
+│       ├── __init__.py                     # Utility package exports
+│       ├── README.md                       # Utilities documentation
+│       ├── progress.py                     # Progress reporting & error handling
+│       ├── audio_utils.py                  # Audio processing & format conversion
+│       ├── cli_args.py                     # Command-line argument parsing
+│       ├── config_loader.py                # JSON configuration management
+│       ├── model_utils.py                  # ML model loading & device management
+│       └── file_utils.py                   # File operations & text handling
 │
 ├── config/                       # Configuration files
 │   ├── voice_clone_profiles.json      # Voice profile definitions
@@ -51,8 +61,18 @@ voice-clone-toolkit/
 ├── tests/                        # Unit tests
 │   ├── __init__.py                    # Test package init
 │   ├── README.md                      # Testing documentation
-│   ├── test_clone_voice.py            # Clone_Voice tests
-│   └── test_clone_voice_conversation.py  # Conversation tests
+│   ├── test_clone_voice.py            # Clone voice script tests
+│   ├── test_clone_voice_conversation.py  # Conversation script tests
+│   ├── test_custom_voice.py           # Custom voice script tests
+│   ├── test_voice_design.py           # Voice design script tests
+│   ├── test_voice_design_clone.py     # Voice design clone script tests
+│   ├── test_convert_audio_format.py   # Audio conversion script tests
+│   ├── test_utils_progress.py         # Progress utilities tests
+│   ├── test_utils_audio_utils.py      # Audio utilities tests
+│   ├── test_utils_cli_args.py         # CLI argument utilities tests
+│   ├── test_utils_config_loader.py    # Configuration loader tests
+│   ├── test_utils_model_utils.py      # Model utilities tests
+│   └── test_utils_file_utils.py       # File utilities tests
 │
 ├── output/                       # Generated audio files (git ignored)
 │   ├── Clone_Voice/                   # Clone voice outputs
@@ -90,6 +110,22 @@ Main Python scripts located in `src/` directory:
 | `src/custom_voice.py` | Custom voice model generation |
 | `src/voice_design.py` | Design voices with natural language |
 | `src/voice_design_clone.py` | Combine voice design with cloning |
+| `src/convert_audio_format.py` | Audio format conversion utility |
+
+### Utility Modules (`src/utils/`)
+
+Shared utility modules for common functionality:
+
+| File | Purpose |
+|------|---------|
+| `src/utils/progress.py` | Progress reporting, error handling, and user feedback |
+| `src/utils/audio_utils.py` | Audio file operations, format conversion (WAV/MP3), and playback |
+| `src/utils/cli_args.py` | Reusable command-line argument parsers for consistent CLI interfaces |
+| `src/utils/config_loader.py` | JSON profile loading, validation, and default configuration creation |
+| `src/utils/model_utils.py` | Qwen3-TTS model loading with device detection (CUDA/CPU) and optimization |
+| `src/utils/file_utils.py` | Safe file operations, text loading, directory management, and path utilities |
+
+The modular architecture promotes code reuse, reduces duplication, and improves maintainability across all scripts.
 
 ### Root Files
 

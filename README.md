@@ -41,6 +41,38 @@ All scripts are located in the `src/` directory:
 - **[GPU Compatibility](documentation/GPU_COMPATIBILITY.md)** - PyTorch and CUDA installation for different GPU generations
 - **[Project Structure](documentation/PROJECT_STRUCTURE.md)** - Detailed project directory structure and organization
 - **[Testing Guide](documentation/TESTING.md)** - How to run and write unit tests
+- **[Utilities Reference](src/utils/README.md)** - Documentation for shared utility modules
+
+## 🏗️ Project Architecture
+
+The Voice Clone Toolkit is built with a **modular architecture** that promotes code reuse and maintainability:
+
+```
+src/
+├── clone_voice.py                    # Main voice cloning script
+├── clone_voice_conversation.py       # Multi-voice conversation generator
+├── custom_voice.py                   # Custom voice model interface
+├── voice_design.py                   # Voice design from descriptions
+├── voice_design_clone.py             # Combined voice design + cloning
+├── convert_audio_format.py           # Audio format conversion utility
+└── utils/                            # Shared utility modules
+    ├── __init__.py                   # Package exports
+    ├── progress.py                   # Progress reporting & error handling
+    ├── audio_utils.py                # Audio processing & format conversion
+    ├── cli_args.py                   # Command-line argument parsing
+    ├── config_loader.py              # JSON configuration management
+    ├── model_utils.py                # ML model loading & device management
+    └── file_utils.py                 # File operations & text handling
+```
+
+### Utility Modules
+
+- **`progress.py`**: Standardized progress reporting, error handling, and user feedback
+- **`audio_utils.py`**: Audio file operations, format conversion (WAV/MP3), and playback
+- **`cli_args.py`**: Reusable command-line argument parsers for consistent CLI interfaces
+- **`config_loader.py`**: JSON profile loading, validation, and default configuration creation
+- **`model_utils.py`**: Qwen3-TTS model loading with device detection (CUDA/CPU) and optimization
+- **`file_utils.py`**: Safe file operations, text loading, directory management, and path utilities
 
 ## ✨ Features
 
@@ -53,6 +85,12 @@ All scripts are located in the `src/` directory:
 - **Audio Playback**: Automatic playback of generated audio (optional)
 - **Multiple Profiles**: Store and switch between multiple voice profiles easily
 - **Multiple Audio Formats**: Output as WAV or MP3 with configurable bitrate
+- **Modular Architecture**: Clean, maintainable codebase with shared utility modules
+  - **Audio Processing**: Centralized audio format handling, conversion, and playback
+  - **Configuration Management**: Unified JSON profile loading and validation
+  - **Command-Line Interface**: Reusable argument parsing for consistent CLI experience
+  - **Error Handling**: Comprehensive error reporting and recovery mechanisms
+  - **File Operations**: Safe file handling with directory creation and validation
 
 ## 🎵 Audio Format Support
 

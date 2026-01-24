@@ -22,14 +22,13 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.voice_design_clone import (
-    load_voice_design_clone_profiles,
-    ensure_output_dir,
-    save_wav_pygame,
-    save_audio,
     list_voice_profiles,
     parse_args,
-    PYDUB_AVAILABLE,
 )
+
+# Import utilities from the new modular structure
+from src.utils.config_loader import load_voice_design_clone_profiles
+from src.utils.audio_utils import ensure_output_dir, save_wav, save_audio, PYDUB_AVAILABLE
 
 
 class TestLoadVoiceDesignCloneProfiles(unittest.TestCase):
@@ -133,7 +132,7 @@ class TestSaveWav(unittest.TestCase):
         sample_rate = 12000
         output_file = os.path.join(self.test_dir, "test.wav")
         
-        save_wav_pygame(output_file, audio_data, sample_rate)
+        save_wav(output_file, audio_data, sample_rate)
         
         self.assertTrue(os.path.exists(output_file))
         self.assertGreater(os.path.getsize(output_file), 0)
@@ -144,7 +143,7 @@ class TestSaveWav(unittest.TestCase):
         sample_rate = 12000
         output_file = os.path.join(self.test_dir, "test_float.wav")
         
-        save_wav_pygame(output_file, audio_data, sample_rate)
+        save_wav(output_file, audio_data, sample_rate)
         
         self.assertTrue(os.path.exists(output_file))
         self.assertGreater(os.path.getsize(output_file), 0)
@@ -156,7 +155,7 @@ class TestSaveWav(unittest.TestCase):
         sample_rate = 12000
         
         self.assertFalse(os.path.exists(os.path.dirname(nested_path)))
-        save_wav_pygame(nested_path, audio_data, sample_rate)
+        save_wav(nested_path, audio_data, sample_rate)
         
         self.assertTrue(os.path.exists(nested_path))
 

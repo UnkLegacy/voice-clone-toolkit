@@ -15,18 +15,17 @@ import numpy as np
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.clone_voice_conversation import (
-    load_json_config,
-    load_text_from_file_or_string,
     parse_script_format,
     parse_script_list,
-    ensure_output_dir,
-    save_wav,
-    save_audio,
     parse_args,
     list_scripts,
     list_all_voices,
-    PYDUB_AVAILABLE,
 )
+
+# Import utilities from the new modular structure
+from src.utils.config_loader import load_json_config
+from src.utils.file_utils import load_text_from_file_or_string
+from src.utils.audio_utils import ensure_output_dir, save_wav, save_audio, PYDUB_AVAILABLE
 
 
 class TestLoadJsonConfig(unittest.TestCase):

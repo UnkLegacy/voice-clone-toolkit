@@ -23,51 +23,53 @@ Voice profiles are automatically loaded from:
 import time
 import sys
 import os
-import torch
 import numpy as np
 from pathlib import Path
 from typing import Dict, Any, List, Tuple, Union
-import io
-import wave
-import argparse
-import json
 import re
+import argparse
+import torch
+import wave
 
+# Import utilities from our new modular structure
+# Handle both relative imports (when run as package) and absolute imports (when run directly)
+try:
+    from .utils.progress import print_progress, print_error, handle_fatal_error, handle_processing_error
+    from .utils.audio_utils import save_audio, play_audio, ensure_output_dir
+    from .utils.config_loader import (
+        load_json_config, 
+        load_voice_clone_profiles, 
+        load_custom_voice_profiles,
+        load_voice_design_profiles,
+        load_voice_design_clone_profiles
+    )
+    from .utils.model_utils import load_voice_clone_model, load_custom_voice_model, load_voice_design_model
+    from .utils.cli_args import create_base_parser, add_common_args, get_generation_modes
+    from .utils.file_utils import validate_file_exists, read_text_file
+except ImportError:
+    # Fallback to absolute imports when run directly
+    sys.path.insert(0, str(Path(__file__).parent))
+    
+    from utils.progress import print_progress, print_error, handle_fatal_error, handle_processing_error
+    from utils.audio_utils import save_audio, play_audio, ensure_output_dir
+    from utils.config_loader import (
+        load_json_config, 
+        load_voice_clone_profiles, 
+        load_custom_voice_profiles,
+        load_voice_design_profiles,
+        load_voice_design_clone_profiles
+    )
+    from utils.model_utils import load_voice_clone_model, load_custom_voice_model, load_voice_design_model
+    from utils.cli_args import create_base_parser, add_common_args, get_generation_modes
+    from utils.file_utils import validate_file_exists, read_text_file
+
+from qwen_tts import Qwen3TTSModel
+
+# Optional dependency for progress bars
 try:
     from tqdm import tqdm
 except ImportError:
-    print("Warning: tqdm not installed. Install with 'pip install tqdm' for progress bars.")
     tqdm = None
-
-try:
-    from pydub import AudioSegment
-    PYDUB_AVAILABLE = True
-except ImportError:
-    PYDUB_AVAILABLE = False
-    # Don't print warning here - only if user tries to use MP3
-
-try:
-    from pygame import mixer  # type: ignore
-    mixer.init()
-    def playsound(filepath: str):
-        """Play audio using pygame."""
-        mixer.music.load(filepath)
-        mixer.music.play()
-        while mixer.music.get_busy():
-            import time
-            time.sleep(0.1)
-except (ImportError, Exception):
-    try:
-        import winsound  # type: ignore
-        def playsound(filepath: str):
-            """Play audio using Windows built-in winsound."""
-            winsound.PlaySound(filepath, winsound.SND_FILENAME)
-    except ImportError:
-        print("Warning: No audio playback library available.")
-        print("Install with 'pip install pygame' for audio playback.")
-        playsound = None
-
-from qwen_tts import Qwen3TTSModel
 
 
 # =============================================================================
@@ -81,7 +83,7 @@ VOICE_DESIGN_CLONE_PROFILES_CONFIG = "config/voice_design_clone_profiles.json"
 CONVERSATION_SCRIPTS_CONFIG = "config/conversation_scripts.json"
 
 # Default settings
-DEFAULT_SCRIPT = "long_script_file_example"  # Which script to use by default
+DEFAULT_SCRIPT = "script_file_example"  # Which script to use by default
 PLAY_AUDIO = True                        # Set to False to skip audio playback
 CONCATENATE_AUDIO = True                 # Set to False to keep lines separate only
 BATCH_RUNS = 1                           # Number of complete runs to generate (for comparing different AI generations)
@@ -91,34 +93,6 @@ BATCH_RUNS = 1                           # Number of complete runs to generate (
 # =============================================================================
 
 
-def print_progress(message: str):
-    """Print a progress message with formatting."""
-    print(f"[INFO] {message}")
-
-
-def load_json_config(config_path: str) -> Dict[str, Any]:
-    """
-    Load a JSON configuration file.
-    
-    Args:
-        config_path: Path to the JSON config file
-        
-    Returns:
-        Dictionary of configuration data
-    """
-    if not os.path.exists(config_path):
-        print_progress(f"Error: Config file not found: {config_path}")
-        return {}
-    
-    try:
-        with open(config_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except json.JSONDecodeError as e:
-        print_progress(f"Error parsing JSON config: {e}")
-        sys.exit(1)
-    except Exception as e:
-        print_progress(f"Error loading config: {e}")
-        sys.exit(1)
 
 
 def load_text_from_file_or_string(value: Union[str, list]) -> Union[str, list]:
@@ -511,7 +485,7 @@ def create_voice_prompts(
             print_progress(f"  ✓ {voice} prompt created")
         
         except Exception as e:
-            print_progress(f"Error creating prompt for '{voice}': {e}")
+            print_error(f"Error creating prompt for '{voice}': {e}")
             continue
     
     return voice_prompts
@@ -597,29 +571,10 @@ def generate_conversation(
             print_progress(f"  ✓ Saved: {final_path}")
             
         except Exception as e:
-            print_progress(f"Error generating line {i}: {e}")
+            print_error(f"Error generating line {i}: {e}")
             continue
     
     return audio_files
-
-
-def play_audio(filepath: str):
-    """Play an audio file."""
-    if not os.path.exists(filepath):
-        print_progress(f"Warning: Audio file not found: {filepath}")
-        return
-    
-    if playsound is None:
-        print_progress("Warning: playsound not available. Cannot play audio.")
-        print_progress(f"Audio file saved at: {os.path.abspath(filepath)}")
-        return
-    
-    print_progress(f"Playing audio: {filepath}")
-    try:
-        playsound(filepath)
-        print_progress("Playback completed")
-    except Exception as e:
-        print_progress(f"Error playing audio: {e}")
 
 
 def parse_args():
@@ -776,7 +731,7 @@ def main():
     batch_runs = args.batch_runs if args.batch_runs is not None else BATCH_RUNS
     
     if script_name not in conversation_scripts:
-        print_progress(f"Error: Script '{script_name}' not found!")
+        print_error(f"Script '{script_name}' not found!")
         print_progress(f"Available scripts: {', '.join(conversation_scripts.keys())}")
         sys.exit(1)
     
@@ -842,7 +797,7 @@ def main():
             voice_prompts = create_voice_prompts(model, voices, voice_profiles, temp_dir=output_dir)
             
             if not voice_prompts:
-                print_progress("Error: No valid voice prompts created!")
+                print_error("No valid voice prompts created!")
                 continue
             
             # Generate conversation
