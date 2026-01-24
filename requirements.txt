@@ -26,9 +26,9 @@ torch>=2.0.0
 numpy>=1.24.0
 
 # Qwen3-TTS - Text-to-speech model
-# Note: Install from official source or GitHub
-# pip install git+https://github.com/QwenLM/Qwen-Audio.git
-qwen-tts>=0.1.0
+# Note: Use -U flag for upgrade: pip install -U qwen-tts
+# Available versions on PyPI: 0.0.2, 0.0.3, 0.0.4, 0.0.5
+qwen-tts>=0.0.5
 
 # Optional Dependencies
 # =====================
