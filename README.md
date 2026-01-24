@@ -42,6 +42,7 @@ All scripts are located in the `src/` directory:
 
 - **Voice Cloning**: Clone any voice using reference audio and transcript
 - **Batch Generation**: Efficiently generate multiple audio samples with the same cloned voice
+- **Batch Runs**: Generate multiple complete runs for AI generation comparison (RNG-based variations)
 - **JSON Configuration**: Easy-to-edit voice profiles stored in JSON format
 - **Flexible Control**: Toggle features via config file or command-line arguments
 - **Progress Tracking**: Visual progress bars with tqdm integration
@@ -386,6 +387,7 @@ This will display all configured voice profiles with their details.
 |----------|-------------|----------|
 | `--only-single` | Only run single voice generation | Quick testing of one sample |
 | `--only-batch` | Only run batch voice generation | Generate multiple samples efficiently |
+| `--batch-runs N` | Generate N complete runs for comparison | Compare different AI generations (RNG variations) |
 | `--no-single` | Skip single voice generation | When you only want batch outputs |
 | `--no-batch` | Skip batch voice generation | When you only want one sample |
 
@@ -473,7 +475,39 @@ python clone_voice.py --voice Grandma --no-play
 python clone_voice.py --voice DougDoug
 ```
 
-### Example 5: Explore Available Voices
+### Example 5: Generate Multiple Runs for Comparison (Batch Runs)
+
+Since AI generation is based on RNG, you can generate multiple complete runs to compare and choose the best results:
+
+```bash
+# Generate 5 different variations of everything
+python src/clone_voice.py --voice DougDoug --batch-runs 5
+```
+
+**Output Structure:**
+```
+output/Clone_Voice/DougDoug/
+├── run_1/
+│   ├── DougDoug_clone.wav
+│   ├── DougDoug_clone_1.wav
+│   ├── DougDoug_clone_2.wav
+│   └── DougDoug_clone_3.wav
+├── run_2/
+│   ├── DougDoug_clone.wav
+│   ├── DougDoug_clone_1.wav
+│   └── ...
+└── run_3/
+    └── ...
+```
+
+**Use Cases:**
+- Compare different AI generations to find the best sounding output
+- Generate variations for A/B testing
+- Create multiple takes to choose from for professional projects
+
+**Note:** This works with ALL scripts: `clone_voice.py`, `clone_voice_conversation.py`, `custom_voice.py`, `voice_design.py`, and `voice_design_clone.py`
+
+### Example 6: Explore Available Voices
 
 ```bash
 # List all configured voice profiles

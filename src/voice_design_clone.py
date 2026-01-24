@@ -63,6 +63,7 @@ DEFAULT_PROFILE = "Nervous_Teen"  # Change this to switch between profiles
 RUN_SINGLE = True                  # Set to False to skip single clone generation
 RUN_BATCH = True                   # Set to False to skip batch clone generation
 PLAY_AUDIO = True                  # Set to False to skip audio playback
+BATCH_RUNS = 1                     # Number of complete runs to generate (for comparing different AI generations)
 
 # =============================================================================
 # END CONFIGURATION SECTION
@@ -483,6 +484,13 @@ Examples:
     )
     
     parser.add_argument(
+        "--batch-runs",
+        type=int,
+        default=None,
+        help=f"Number of complete runs to generate for comparison (default: {BATCH_RUNS}). Creates run_1/, run_2/, etc. subdirectories"
+    )
+    
+    parser.add_argument(
         "--list-profiles",
         action="store_true",
         help="List available voice design + clone profiles and exit"
@@ -531,6 +539,7 @@ def main():
     run_single = RUN_SINGLE and not args.no_single and not args.only_batch
     run_batch = RUN_BATCH and not args.no_batch and not args.only_single
     play_audio_enabled = PLAY_AUDIO and not args.no_play
+    batch_runs = args.batch_runs if args.batch_runs is not None else BATCH_RUNS
     
     # Determine which profile to use
     profile_name = args.profile if args.profile else DEFAULT_PROFILE
@@ -546,106 +555,141 @@ def main():
     try:
         print("\n" + "="*60)
         print(f"VOICE DESIGN + CLONE: {profile_name}")
+        if batch_runs > 1:
+            print(f"WITH {batch_runs} BATCH RUNS")
         print("="*60)
         print_progress(f"Description: {profile.get('description', 'N/A')}")
         print_progress(f"Language: {profile['language']}")
         print_progress(f"Running single: {run_single}")
         print_progress(f"Running batch: {run_batch}")
         print_progress(f"Audio playback: {play_audio_enabled}")
+        if batch_runs > 1:
+            print_progress(f"Batch runs: {batch_runs} (outputs will be in run_1/, run_2/, etc.)")
         
-        # Ensure output directory exists
-        ensure_output_dir()
-        
-        # Step 1: Load VoiceDesign model and create reference audio
-        print("\n" + "="*60)
-        print("STEP 1: CREATE VOICE DESIGN REFERENCE")
-        print("="*60)
-        
+        # Load models once
         design_model = load_design_model()
+        clone_model = load_clone_model()
         
         ref_data = profile['reference']
         ref_text = ref_data['text']
         ref_instruct = ref_data['instruct']
         ref_language = ref_data.get('language', profile['language'])
         
-        ref_output = f"output/Voice_Design_Clone/{profile_name}_reference.wav"
-        ref_wavs, sr = create_voice_design_reference(
-            design_model=design_model,
-            ref_text=ref_text,
-            ref_instruct=ref_instruct,
-            language=ref_language,
-            output_file=ref_output
-        )
-        
-        # Play the reference audio
-        if play_audio_enabled:
+        # Process batch runs
+        for run_num in range(1, batch_runs + 1):
+            if batch_runs > 1:
+                print("\n" + "="*80)
+                print(f"BATCH RUN {run_num}/{batch_runs}")
+                print("="*80)
+            
+            # Determine output directory
+            if batch_runs > 1:
+                base_output_dir = f"output/Voice_Design_Clone/run_{run_num}"
+            else:
+                base_output_dir = "output/Voice_Design_Clone"
+            ensure_output_dir(base_output_dir)
+            
+            # Step 1: Create voice design reference
             print("\n" + "="*60)
-            print("Playing reference audio...")
+            if batch_runs > 1:
+                print(f"RUN {run_num} - STEP 1: CREATE VOICE DESIGN REFERENCE")
+            else:
+                print("STEP 1: CREATE VOICE DESIGN REFERENCE")
             print("="*60)
-            play_audio(ref_output)
-        
-        # Step 2: Load Clone model and build reusable clone prompt
-        print("\n" + "="*60)
-        print("STEP 2: BUILD REUSABLE CLONE PROMPT")
-        print("="*60)
-        
-        clone_model = load_clone_model()
-        
-        print_progress("Creating voice clone prompt from reference...")
-        voice_clone_prompt = clone_model.create_voice_clone_prompt(
-            ref_audio=(ref_wavs[0], sr),
-            ref_text=ref_text,
-        )
-        print_progress("Voice clone prompt created successfully!")
-        
-        # Step 3: Generate single clones using the reusable prompt
-        if run_single:
-            single_texts = profile.get('single_texts', [])
-            if single_texts:
+            
+            ref_output = f"{base_output_dir}/{profile_name}_reference.wav"
+            ref_wavs, sr = create_voice_design_reference(
+                design_model=design_model,
+                ref_text=ref_text,
+                ref_instruct=ref_instruct,
+                language=ref_language,
+                output_file=ref_output
+            )
+            
+            # Play the reference audio (only last run)
+            if play_audio_enabled and run_num == batch_runs:
                 print("\n" + "="*60)
-                print("STEP 3: GENERATE SINGLE CLONES (Reusing Prompt)")
+                print("Playing reference audio...")
                 print("="*60)
-                
-                for i, text in enumerate(single_texts, 1):
-                    output_file = f"output/Voice_Design_Clone/{profile_name}_single_{i}.wav"
-                    wavs, sr_clone = generate_single_clone(
+                play_audio(ref_output)
+            
+            # Step 2: Build reusable clone prompt
+            print("\n" + "="*60)
+            if batch_runs > 1:
+                print(f"RUN {run_num} - STEP 2: BUILD REUSABLE CLONE PROMPT")
+            else:
+                print("STEP 2: BUILD REUSABLE CLONE PROMPT")
+            print("="*60)
+            
+            print_progress("Creating voice clone prompt from reference...")
+            voice_clone_prompt = clone_model.create_voice_clone_prompt(
+                ref_audio=(ref_wavs[0], sr),
+                ref_text=ref_text,
+            )
+            print_progress("Voice clone prompt created successfully!")
+            
+            # Step 3: Generate single clones using the reusable prompt
+            if run_single:
+                single_texts = profile.get('single_texts', [])
+                if single_texts:
+                    print("\n" + "="*60)
+                    if batch_runs > 1:
+                        print(f"RUN {run_num} - STEP 3: GENERATE SINGLE CLONES (Reusing Prompt)")
+                    else:
+                        print("STEP 3: GENERATE SINGLE CLONES (Reusing Prompt)")
+                    print("="*60)
+                    
+                    for i, text in enumerate(single_texts, 1):
+                        output_file = f"{base_output_dir}/{profile_name}_single_{i}.wav"
+                        wavs, sr_clone = generate_single_clone(
+                            clone_model=clone_model,
+                            text=text,
+                            language=profile['language'],
+                            voice_clone_prompt=voice_clone_prompt,
+                            output_file=output_file
+                        )
+                        
+                        # Play first single clone (only last run)
+                        if play_audio_enabled and i == 1 and run_num == batch_runs:
+                            print("\n" + "="*60)
+                            play_audio(output_file)
+            
+            # Step 4: Generate batch clones using the reusable prompt
+            if run_batch:
+                batch_texts = profile.get('batch_texts', [])
+                if batch_texts:
+                    print("\n" + "="*60)
+                    if batch_runs > 1:
+                        print(f"RUN {run_num} - STEP 4: GENERATE BATCH CLONES (Reusing Prompt)")
+                    else:
+                        print("STEP 4: GENERATE BATCH CLONES (Reusing Prompt)")
+                    print("="*60)
+                    
+                    batch_languages = [profile['language']] * len(batch_texts)
+                    
+                    wavs_batch, sr_batch = generate_batch_clone(
                         clone_model=clone_model,
-                        text=text,
-                        language=profile['language'],
+                        texts=batch_texts,
+                        languages=batch_languages,
                         voice_clone_prompt=voice_clone_prompt,
-                        output_file=output_file
+                        output_prefix=f"{base_output_dir}/{profile_name}_batch"
                     )
                     
-                    # Play first single clone
-                    if play_audio_enabled and i == 1:
+                    # Play first batch clone (only last run)
+                    if play_audio_enabled and run_num == batch_runs:
                         print("\n" + "="*60)
-                        play_audio(output_file)
-        
-        # Step 4: Generate batch clones using the reusable prompt
-        if run_batch:
-            batch_texts = profile.get('batch_texts', [])
-            if batch_texts:
-                print("\n" + "="*60)
-                print("STEP 4: GENERATE BATCH CLONES (Reusing Prompt)")
-                print("="*60)
-                
-                batch_languages = [profile['language']] * len(batch_texts)
-                
-                wavs_batch, sr_batch = generate_batch_clone(
-                    clone_model=clone_model,
-                    texts=batch_texts,
-                    languages=batch_languages,
-                    voice_clone_prompt=voice_clone_prompt,
-                    output_prefix=f"output/Voice_Design_Clone/{profile_name}_batch"
-                )
-                
-                # Play first batch clone
-                if play_audio_enabled:
-                    print("\n" + "="*60)
-                    play_audio(f"output/Voice_Design_Clone/{profile_name}_batch_0.wav")
+                        play_audio(f"{base_output_dir}/{profile_name}_batch_0.wav")
+            
+            if batch_runs > 1:
+                print("\n" + "-"*80)
+                print(f"Run {run_num} Complete")
+                print(f"Output: {base_output_dir}")
+                print("-"*80)
         
         total_duration = time.time() - start_time
         print("\n" + "="*60)
+        if batch_runs > 1:
+            print_progress(f"Total batch runs: {batch_runs}")
         print_progress(f"Total execution time: {total_duration:.2f} seconds")
         print_progress(f"Profile '{profile_name}' completed successfully")
         print("="*60)

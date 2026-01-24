@@ -62,6 +62,7 @@ DEFAULT_PROFILE = "Professional_Narrator"  # Change this to switch between profi
 RUN_SINGLE = True                           # Set to False to skip single generation
 RUN_BATCH = True                            # Set to False to skip batch generation
 PLAY_AUDIO = True                           # Set to False to skip audio playback
+BATCH_RUNS = 1                              # Number of complete runs to generate (for comparing different AI generations)
 
 # =============================================================================
 # END CONFIGURATION SECTION
@@ -389,6 +390,13 @@ Examples:
     )
     
     parser.add_argument(
+        "--batch-runs",
+        type=int,
+        default=None,
+        help=f"Number of complete runs to generate for comparison (default: {BATCH_RUNS}). Creates run_1/, run_2/, etc. subdirectories"
+    )
+    
+    parser.add_argument(
         "--list-profiles",
         action="store_true",
         help="List available voice design profiles and exit"
@@ -441,6 +449,7 @@ def main():
     run_single = RUN_SINGLE and not args.no_single and not args.only_batch
     run_batch = RUN_BATCH and not args.no_batch and not args.only_single
     play_audio_enabled = PLAY_AUDIO and not args.no_play
+    batch_runs = args.batch_runs if args.batch_runs is not None else BATCH_RUNS
     
     # Determine which profile to use
     profile_name = args.profile if args.profile else DEFAULT_PROFILE
@@ -456,67 +465,96 @@ def main():
     try:
         print("\n" + "="*60)
         print(f"VOICE DESIGN GENERATION: {profile_name}")
+        if batch_runs > 1:
+            print(f"WITH {batch_runs} BATCH RUNS")
         print("="*60)
         print_progress(f"Language: {profile['language']}")
         print_progress(f"Description: {profile.get('description', 'N/A')}")
         print_progress(f"Running single: {run_single}")
         print_progress(f"Running batch: {run_batch}")
         print_progress(f"Audio playback: {play_audio_enabled}")
-        
-        # Ensure output directory exists
-        ensure_output_dir()
+        if batch_runs > 1:
+            print_progress(f"Batch runs: {batch_runs} (outputs will be in run_1/, run_2/, etc.)")
         
         # Load model
         model = load_model()
         
-        # Output paths
-        output_single = f"output/Voice_Design/{profile_name}_single.wav"
-        output_batch_prefix = f"output/Voice_Design/{profile_name}_batch"
-        
-        # Single voice generation
-        if run_single:
-            print("\n" + "="*60)
-            print("SINGLE VOICE GENERATION")
-            print("="*60)
-            wavs, sr = generate_single_voice(
-                model=model,
-                text=profile['single_text'],
-                language=profile['language'],
-                instruct=profile['single_instruct'],
-                output_file=output_single
-            )
+        # Process batch runs
+        for run_num in range(1, batch_runs + 1):
+            if batch_runs > 1:
+                print("\n" + "="*80)
+                print(f"BATCH RUN {run_num}/{batch_runs}")
+                print("="*80)
             
-            # Play the generated audio
-            if play_audio_enabled:
+            # Determine output directory
+            if batch_runs > 1:
+                base_output_dir = f"output/Voice_Design/run_{run_num}"
+            else:
+                base_output_dir = "output/Voice_Design"
+            ensure_output_dir(base_output_dir)
+            
+            # Output paths
+            output_single = f"{base_output_dir}/{profile_name}_single.wav"
+            output_batch_prefix = f"{base_output_dir}/{profile_name}_batch"
+            
+            # Single voice generation
+            if run_single:
                 print("\n" + "="*60)
-                play_audio(output_single)
-        
-        # Batch voice generation
-        if run_batch:
-            batch_texts = profile.get('batch_texts', [])
-            if batch_texts:
-                print("\n" + "="*60)
-                print("BATCH VOICE GENERATION")
+                if batch_runs > 1:
+                    print(f"RUN {run_num} - SINGLE VOICE GENERATION")
+                else:
+                    print("SINGLE VOICE GENERATION")
                 print("="*60)
-                
-                batch_languages = profile.get('batch_languages', [profile['language']] * len(batch_texts))
-                batch_instructs = profile.get('batch_instructs', [''] * len(batch_texts))
-                
-                wavs, sr = generate_batch_voices(
+                wavs, sr = generate_single_voice(
                     model=model,
-                    texts=batch_texts,
-                    languages=batch_languages,
-                    instructs=batch_instructs,
-                    output_prefix=output_batch_prefix
+                    text=profile['single_text'],
+                    language=profile['language'],
+                    instruct=profile['single_instruct'],
+                    output_file=output_single
                 )
                 
-                # Play the first batch output
-                if play_audio_enabled:
+                # Play the generated audio (only last run)
+                if play_audio_enabled and run_num == batch_runs:
                     print("\n" + "="*60)
-                    play_audio(f"{output_batch_prefix}_1.wav")
+                    play_audio(output_single)
+            
+            # Batch voice generation
+            if run_batch:
+                batch_texts = profile.get('batch_texts', [])
+                if batch_texts:
+                    print("\n" + "="*60)
+                    if batch_runs > 1:
+                        print(f"RUN {run_num} - BATCH VOICE GENERATION")
+                    else:
+                        print("BATCH VOICE GENERATION")
+                    print("="*60)
+                    
+                    batch_languages = profile.get('batch_languages', [profile['language']] * len(batch_texts))
+                    batch_instructs = profile.get('batch_instructs', [''] * len(batch_texts))
+                    
+                    wavs, sr = generate_batch_voices(
+                        model=model,
+                        texts=batch_texts,
+                        languages=batch_languages,
+                        instructs=batch_instructs,
+                        output_prefix=output_batch_prefix
+                    )
+                    
+                    # Play the first batch output (only last run)
+                    if play_audio_enabled and run_num == batch_runs:
+                        print("\n" + "="*60)
+                        play_audio(f"{output_batch_prefix}_1.wav")
+            
+            if batch_runs > 1:
+                print("\n" + "-"*80)
+                print(f"Run {run_num} Complete")
+                print(f"Output: {base_output_dir}")
+                print("-"*80)
         
         total_duration = time.time() - start_time
         print("\n" + "="*60)
+        if batch_runs > 1:
+            print_progress(f"Total batch runs: {batch_runs}")
         print_progress(f"Total execution time: {total_duration:.2f} seconds")
         print("="*60)
         

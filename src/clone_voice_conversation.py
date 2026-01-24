@@ -77,6 +77,7 @@ CONVERSATION_SCRIPTS_CONFIG = "config/conversation_scripts.json"
 DEFAULT_SCRIPT = "mixed_profile_types"  # Which script to use by default
 PLAY_AUDIO = True                        # Set to False to skip audio playback
 CONCATENATE_AUDIO = True                 # Set to False to keep lines separate only
+BATCH_RUNS = 1                           # Number of complete runs to generate (for comparing different AI generations)
 
 # =============================================================================
 # END CONFIGURATION SECTION
@@ -562,11 +563,12 @@ def parse_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python Clone_Voice_Conversation.py                                # Use default script
-  python Clone_Voice_Conversation.py --script example_conversation  # Use specific script
-  python Clone_Voice_Conversation.py --list-scripts                 # List available scripts
-  python Clone_Voice_Conversation.py --no-play                      # Skip audio playback
-  python Clone_Voice_Conversation.py --no-concatenate               # Keep lines separate only
+  python src/clone_voice_conversation.py                                # Use default script
+  python src/clone_voice_conversation.py --script example_conversation  # Use specific script
+  python src/clone_voice_conversation.py --batch-runs 3                 # Generate 3 different conversation versions
+  python src/clone_voice_conversation.py --list-scripts                 # List available scripts
+  python src/clone_voice_conversation.py --no-play                      # Skip audio playback
+  python src/clone_voice_conversation.py --no-concatenate               # Keep lines separate only
         """
     )
     
@@ -593,6 +595,13 @@ Examples:
         "--no-concatenate",
         action="store_true",
         help="Don't create concatenated audio file (keep lines separate only)"
+    )
+    
+    parser.add_argument(
+        "--batch-runs",
+        type=int,
+        default=None,
+        help=f"Number of complete runs to generate for comparison (default: {BATCH_RUNS}). Creates run_1/, run_2/, etc. subdirectories"
     )
     
     return parser.parse_args()
@@ -636,6 +645,7 @@ def main():
     script_name = args.script if args.script else DEFAULT_SCRIPT
     play_audio_enabled = PLAY_AUDIO and not args.no_play
     concatenate_enabled = CONCATENATE_AUDIO and not args.no_concatenate
+    batch_runs = args.batch_runs if args.batch_runs is not None else BATCH_RUNS
     
     if script_name not in conversation_scripts:
         print_progress(f"Error: Script '{script_name}' not found!")
@@ -654,10 +664,14 @@ def main():
     try:
         print("\n" + "="*60)
         print(f"CONVERSATION SCRIPT: {script_name}")
+        if batch_runs > 1:
+            print(f"WITH {batch_runs} BATCH RUNS")
         print("="*60)
         print_progress(f"Actors: {', '.join(actors)}")
         print_progress(f"Audio playback: {play_audio_enabled}")
         print_progress(f"Concatenate audio: {concatenate_enabled}")
+        if batch_runs > 1:
+            print_progress(f"Batch runs: {batch_runs} (outputs will be in run_1/, run_2/, etc.)")
         
         # Parse script
         if isinstance(script_content, str):
@@ -667,68 +681,113 @@ def main():
         
         print_progress(f"Parsed {len(script_lines)} dialogue lines")
         
-        # Ensure output directory
-        output_dir = f"output/Conversations/{script_name}"
-        ensure_output_dir(output_dir)
-        
         # Load model
         model = load_model()
         
-        # Create voice prompts for all actors
-        print("\n" + "="*60)
-        print("PREPARING ACTOR VOICES")
-        print("="*60)
-        actor_prompts = create_actor_prompts(model, actors, voice_profiles, temp_dir=output_dir)
+        # Process batch runs
+        total_generated = 0
+        last_concatenated_file = None
         
-        if not actor_prompts:
-            print_progress("Error: No valid actor prompts created!")
-            sys.exit(1)
-        
-        # Generate conversation
-        print("\n" + "="*60)
-        print("GENERATING CONVERSATION")
-        print("="*60)
-        audio_files = generate_conversation(
-            model=model,
-            script_lines=script_lines,
-            actor_prompts=actor_prompts,
-            output_dir=output_dir,
-            conversation_name=script_name
-        )
-        
-        if not audio_files:
-            print_progress("Error: No audio files generated!")
-            sys.exit(1)
-        
-        # Concatenate audio if requested
-        concatenated_file = None
-        if concatenate_enabled:
+        for run_num in range(1, batch_runs + 1):
+            if batch_runs > 1:
+                print("\n" + "="*80)
+                print(f"BATCH RUN {run_num}/{batch_runs}")
+                print("="*80)
+            
+            # Determine output directory
+            if batch_runs > 1:
+                output_dir = f"output/Conversations/{script_name}/run_{run_num}"
+            else:
+                output_dir = f"output/Conversations/{script_name}"
+            ensure_output_dir(output_dir)
+            
+            # Create voice prompts for all actors
+            if run_num == 1 or batch_runs > 1:
+                print("\n" + "="*60)
+                if batch_runs > 1:
+                    print(f"RUN {run_num} - PREPARING ACTOR VOICES")
+                else:
+                    print("PREPARING ACTOR VOICES")
+                print("="*60)
+            
+            actor_prompts = create_actor_prompts(model, actors, voice_profiles, temp_dir=output_dir)
+            
+            if not actor_prompts:
+                print_progress("Error: No valid actor prompts created!")
+                continue
+            
+            # Generate conversation
             print("\n" + "="*60)
-            print("CONCATENATING AUDIO")
+            if batch_runs > 1:
+                print(f"RUN {run_num} - GENERATING CONVERSATION")
+            else:
+                print("GENERATING CONVERSATION")
             print("="*60)
-            concatenated_file = f"{output_dir}/{script_name}_full.wav"
+            audio_files = generate_conversation(
+                model=model,
+                script_lines=script_lines,
+                actor_prompts=actor_prompts,
+                output_dir=output_dir,
+                conversation_name=script_name
+            )
             
-            # Get sample rate from first audio file
-            with wave.open(audio_files[0], 'rb') as wav:
-                sample_rate = wav.getframerate()
+            if not audio_files:
+                print_progress(f"Warning: No audio files generated for run {run_num}!")
+                continue
             
-            concatenate_audio_files(audio_files, concatenated_file, sample_rate)
+            total_generated += len(audio_files)
+            
+            # Concatenate audio if requested
+            concatenated_file = None
+            if concatenate_enabled:
+                print("\n" + "="*60)
+                if batch_runs > 1:
+                    print(f"RUN {run_num} - CONCATENATING AUDIO")
+                else:
+                    print("CONCATENATING AUDIO")
+                print("="*60)
+                concatenated_file = f"{output_dir}/{script_name}_full.wav"
+                
+                # Get sample rate from first audio file
+                with wave.open(audio_files[0], 'rb') as wav:
+                    sample_rate = wav.getframerate()
+                
+                concatenate_audio_files(audio_files, concatenated_file, sample_rate)
+                last_concatenated_file = concatenated_file
+            
+            if batch_runs > 1:
+                print("\n" + "-"*80)
+                print(f"Run {run_num} Complete: {len(audio_files)} lines generated")
+                print(f"Output: {output_dir}")
+                print("-"*80)
         
         # Summary
         duration = time.time() - start_time
         print("\n" + "="*60)
         print("GENERATION COMPLETE")
         print("="*60)
-        print_progress(f"Generated {len(audio_files)} audio lines")
-        print_progress(f"Output directory: {output_dir}")
+        if batch_runs > 1:
+            print_progress(f"Total batch runs: {batch_runs}")
+            print_progress(f"Lines per run: {len(script_lines)}")
+            print_progress(f"Total audio files generated: {total_generated}")
+        else:
+            print_progress(f"Generated {total_generated} audio lines")
+        base_output = f"output/Conversations/{script_name}"
+        if batch_runs > 1:
+            print_progress(f"Output base directory: {base_output} (run_1/, run_2/, etc.)")
+        else:
+            print_progress(f"Output directory: {base_output}")
         print_progress(f"Total execution time: {duration:.2f} seconds")
         
-        # Play concatenated audio if available
-        if concatenated_file and play_audio_enabled:
+        # Play last concatenated audio if available
+        if last_concatenated_file and play_audio_enabled:
             print("\n" + "="*60)
-            print("PLAYING FULL CONVERSATION")
+            if batch_runs > 1:
+                print(f"PLAYING LAST RUN CONVERSATION (run_{batch_runs})")
+            else:
+                print("PLAYING FULL CONVERSATION")
             print("="*60)
-            play_audio(concatenated_file)
+            play_audio(last_concatenated_file)
         
         print("="*60)
         

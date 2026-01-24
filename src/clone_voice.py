@@ -70,6 +70,7 @@ RUN_SINGLE = True                  # Set to False to skip single generation
 RUN_BATCH = True                   # Set to False to skip batch generation
 PLAY_AUDIO = True                  # Set to False to skip audio playback
 COMPARE_MODE = False               # Set to True to use sample_transcript as single_text (for quality comparison)
+BATCH_RUNS = 1                     # Number of complete runs to generate (for comparing different AI generations)
 
 # =============================================================================
 # END CONFIGURATION SECTION
@@ -418,13 +419,14 @@ def parse_args(voice_profiles: Dict[str, Any]):
 Available voice profiles: {', '.join(voice_profiles.keys())}
 
 Examples:
-  python Clone_Voice.py                                   # Use default settings from config
-  python Clone_Voice.py --voice DougDoug                  # Use DougDoug voice profile
-  python Clone_Voice.py --voices DougDoug Grandma         # Process multiple voice profiles
-  python Clone_Voice.py --no-batch                        # Skip batch generation
-  python Clone_Voice.py --only-single                     # Only run single generation
-  python Clone_Voice.py --compare --only-single           # Compare mode: generate same text as reference
-  python Clone_Voice.py --list-voices                     # List available voice profiles
+  python src/clone_voice.py                               # Use default settings from config
+  python src/clone_voice.py --voice DougDoug              # Use DougDoug voice profile
+  python src/clone_voice.py --voices DougDoug Grandma     # Process multiple voice profiles
+  python src/clone_voice.py --batch-runs 5                # Generate 5 different versions (run_1/, run_2/, etc.)
+  python src/clone_voice.py --no-batch                    # Skip batch generation
+  python src/clone_voice.py --only-single                 # Only run single generation
+  python src/clone_voice.py --compare --only-single       # Compare mode: generate same text as reference
+  python src/clone_voice.py --list-voices                 # List available voice profiles
         """
     )
     
@@ -481,6 +483,13 @@ Examples:
     )
     
     parser.add_argument(
+        "--batch-runs",
+        type=int,
+        default=None,
+        help=f"Number of complete runs to generate for comparison (default: {BATCH_RUNS}). Creates run_1/, run_2/, etc. subdirectories"
+    )
+    
+    parser.add_argument(
         "--list-voices",
         action="store_true",
         help="List available voice profiles and exit"
@@ -510,7 +519,9 @@ def process_voice_profile(
     run_single: bool,
     run_batch: bool,
     play_audio_enabled: bool,
-    compare_mode: bool
+    compare_mode: bool,
+    run_number: Optional[int] = None,
+    total_runs: int = 1
 ):
     """
     Process a single voice profile for generation.
@@ -523,6 +534,8 @@ def process_voice_profile(
         run_batch: Whether to run batch generation
         play_audio_enabled: Whether to play audio after generation
         compare_mode: Whether to use sample_transcript as single_text
+        run_number: Current run number (for batch runs), None for single run
+        total_runs: Total number of batch runs
     """
     if voice_name not in voice_profiles:
         print_progress(f"Error: Voice profile '{voice_name}' not found!")
@@ -564,8 +577,15 @@ def process_voice_profile(
         
         # Extract input filename (without extension) for output naming
         input_name = Path(ref_audio).stem
-        output_single = f"output/Clone_Voice/{input_name}/{input_name}_clone.wav"
-        output_batch_prefix = f"output/Clone_Voice/{input_name}/{input_name}_clone"
+        
+        # Add run subdirectory if doing multiple batch runs
+        if run_number is not None:
+            base_output_dir = f"output/Clone_Voice/{input_name}/run_{run_number}"
+        else:
+            base_output_dir = f"output/Clone_Voice/{input_name}"
+        
+        output_single = f"{base_output_dir}/{input_name}_clone.wav"
+        output_batch_prefix = f"{base_output_dir}/{input_name}_clone"
         
         # Single voice clone generation
         if run_single:
@@ -641,6 +661,7 @@ def main():
     run_batch = RUN_BATCH and not args.no_batch and not args.only_single
     play_audio_enabled = PLAY_AUDIO and not args.no_play
     compare_mode = COMPARE_MODE or args.compare
+    batch_runs = args.batch_runs if args.batch_runs is not None else BATCH_RUNS
     
     # Determine which voices to process
     if args.voices:
@@ -659,40 +680,69 @@ def main():
     total_start_time = time.time()
     
     try:
-        # Load model once for all voices
+        # Load model once for all voices and runs
         print("\n" + "="*60)
         print(f"PROCESSING {len(voice_names)} VOICE PROFILE(S)")
+        if batch_runs > 1:
+            print(f"WITH {batch_runs} BATCH RUNS")
         print("="*60)
         print_progress(f"Voices to process: {', '.join(voice_names)}")
+        if batch_runs > 1:
+            print_progress(f"Batch runs: {batch_runs} (outputs will be in run_1/, run_2/, etc.)")
         
         model = load_model()
         
-        # Process each voice
-        success_count = 0
-        for i, voice_name in enumerate(voice_names, 1):
-            print("\n" + "="*80)
-            print(f"PROCESSING VOICE {i}/{len(voice_names)}: {voice_name}")
-            print("="*80)
+        # Process batch runs
+        total_success_count = 0
+        for run_num in range(1, batch_runs + 1):
+            if batch_runs > 1:
+                print("\n" + "="*80)
+                print(f"BATCH RUN {run_num}/{batch_runs}")
+                print("="*80)
             
-            success = process_voice_profile(
-                voice_name=voice_name,
-                voice_profiles=voice_profiles,
-                model=model,
-                run_single=run_single,
-                run_batch=run_batch,
-                play_audio_enabled=play_audio_enabled,
-                compare_mode=compare_mode
-            )
+            # Process each voice
+            success_count = 0
+            for i, voice_name in enumerate(voice_names, 1):
+                print("\n" + "="*80)
+                if batch_runs > 1:
+                    print(f"RUN {run_num}/{batch_runs} - VOICE {i}/{len(voice_names)}: {voice_name}")
+                else:
+                    print(f"PROCESSING VOICE {i}/{len(voice_names)}: {voice_name}")
+                print("="*80)
+                
+                success = process_voice_profile(
+                    voice_name=voice_name,
+                    voice_profiles=voice_profiles,
+                    model=model,
+                    run_single=run_single,
+                    run_batch=run_batch,
+                    play_audio_enabled=play_audio_enabled,
+                    compare_mode=compare_mode,
+                    run_number=run_num if batch_runs > 1 else None,
+                    total_runs=batch_runs
+                )
+                
+                if success:
+                    success_count += 1
             
-            if success:
-                success_count += 1
+            total_success_count += success_count
+            
+            if batch_runs > 1:
+                print("\n" + "-"*80)
+                print(f"Run {run_num} Summary: {success_count}/{len(voice_names)} voices successful")
+                print("-"*80)
         
         # Print summary
         total_duration = time.time() - total_start_time
         print("\n" + "="*80)
         print("SUMMARY")
         print("="*80)
-        print_progress(f"Successfully processed: {success_count}/{len(voice_names)} voices")
+        if batch_runs > 1:
+            print_progress(f"Total batch runs: {batch_runs}")
+            print_progress(f"Voices per run: {len(voice_names)}")
+            print_progress(f"Total generations: {total_success_count}/{batch_runs * len(voice_names)}")
+        else:
+            print_progress(f"Successfully processed: {total_success_count}/{len(voice_names)} voices")
         print_progress(f"Total execution time: {total_duration:.2f} seconds")
         print("="*80)
         
