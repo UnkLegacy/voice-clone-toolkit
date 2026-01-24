@@ -12,6 +12,8 @@ Features:
 - Generate audio for each line in order
 - Optional audio concatenation for full conversation playback
 - Support for both inline scripts and script files
+- Automatic volume normalization (enabled by default) - balances quiet voices (like DougDoug, Grandma) 
+  with louder ones. Each voice is normalized to the same peak level, so all voices end up balanced.
 
 Voice profiles are automatically loaded from:
 - config/voice_clone_profiles.json (reference audio + transcript)
@@ -25,7 +27,7 @@ import sys
 import os
 import numpy as np
 from pathlib import Path
-from typing import Dict, Any, List, Tuple, Union
+from typing import Dict, Any, List, Tuple, Union, Optional
 import re
 import argparse
 import torch
@@ -91,10 +93,13 @@ VOICE_DESIGN_CLONE_PROFILES_CONFIG = "config/voice_design_clone_profiles.json"
 CONVERSATION_SCRIPTS_CONFIG = "config/conversation_scripts.json"
 
 # Default settings
+BATCH_RUNS = 1                           # Number of complete runs to generate (for comparing different AI generations)
 DEFAULT_SCRIPT = "script_file_example"  # Which script to use by default
 PLAY_AUDIO = True                        # Set to False to skip audio playback
 CONCATENATE_AUDIO = True                 # Set to False to keep lines separate only
-BATCH_RUNS = 1                           # Number of complete runs to generate (for comparing different AI generations)
+NORMALIZE_VOLUME = True                  # Set to True to automatically balance volume levels across all voices (recommended)
+                                        # Each voice is normalized to 95% peak level, so quiet voices (like DougDoug, Grandma)
+                                        # are boosted and loud voices are reduced to match. All voices end up at the same level.
 
 # =============================================================================
 # END CONFIGURATION SECTION
@@ -260,7 +265,10 @@ def save_audio(filepath: str, audio_data: np.ndarray, sample_rate: int, output_f
     return wav_path
 
 
-def concatenate_audio_files(audio_files: List[str], output_file: str, sample_rate: int, silence_duration: float = 0.3, output_format: str = "wav", bitrate: str = "192k"):
+def concatenate_audio_files(audio_files: List[str], output_file: str, sample_rate: int, 
+                           silence_duration: float = 0.3, output_format: str = "wav", 
+                           bitrate: str = "192k", normalize: bool = False, 
+                           volume_adjust: Optional[float] = None):
     """
     Concatenate multiple audio files with optional silence between them.
     Supports both WAV and MP3 input/output files.
@@ -272,6 +280,8 @@ def concatenate_audio_files(audio_files: List[str], output_file: str, sample_rat
         silence_duration: Duration of silence between audio clips in seconds
         output_format: Output format ("wav" or "mp3")
         bitrate: Bitrate for MP3 encoding (e.g., "192k", "320k")
+        normalize: If True, normalize the final concatenated audio (usually not needed if individual files are normalized)
+        volume_adjust: Optional volume adjustment for final concatenated audio
     
     Returns:
         str: Final output filepath
@@ -300,7 +310,11 @@ def concatenate_audio_files(audio_files: List[str], output_file: str, sample_rat
             concatenated.append(silence)
     
     full_audio = np.concatenate(concatenated)
-    final_path = save_audio(output_file, full_audio, sample_rate, output_format, bitrate)
+    final_path = save_audio(
+        output_file, full_audio, sample_rate, output_format, bitrate,
+        normalize=normalize,
+        volume_adjust=volume_adjust
+    )
     print_progress(f"Concatenated audio saved to: {final_path}")
     return final_path
 
@@ -528,7 +542,9 @@ def generate_conversation(
     output_dir: str,
     conversation_name: str,
     output_format: str = "wav",
-    bitrate: str = "192k"
+    bitrate: str = "192k",
+    normalize_volume: bool = False,
+    volume_adjust: Optional[float] = None
 ) -> List[str]:
     """
     Generate audio for each line in the conversation script.
@@ -541,6 +557,8 @@ def generate_conversation(
         conversation_name: Name of the conversation (for file naming)
         output_format: Output format ("wav" or "mp3")
         bitrate: Bitrate for MP3 encoding (e.g., "192k", "320k")
+        normalize_volume: If True, normalize audio volume to balance quiet voices
+        volume_adjust: Optional volume adjustment factor (e.g., 1.5 for +50% boost)
         
     Returns:
         List of generated audio file paths
@@ -574,7 +592,11 @@ def generate_conversation(
             
             # Save the line (extension will be set by save_audio)
             output_file = f"{output_dir}/{conversation_name}_line_{i:03d}_{voice}"
-            final_path = save_audio(output_file, wavs[0], sr, output_format, bitrate)
+            final_path = save_audio(
+                output_file, wavs[0], sr, output_format, bitrate,
+                normalize=normalize_volume,
+                volume_adjust=volume_adjust
+            )
             audio_files.append(final_path)
             print_progress(f"  ✓ Saved: {final_path}")
             
@@ -655,6 +677,31 @@ Examples:
         type=str,
         default="192k",
         help="Bitrate for MP3 encoding (default: 192k). Examples: 128k, 192k, 320k"
+    )
+    
+    # Volume normalization (defaults to NORMALIZE_VOLUME config value)
+    normalize_group = parser.add_mutually_exclusive_group()
+    normalize_group.add_argument(
+        "--normalize-volume",
+        dest="normalize_volume",
+        action="store_true",
+        default=None,  # None means "use config default"
+        help=f"Enable volume normalization to balance quiet voices (e.g., DougDoug, Grandma) with louder ones. Uses peak normalization to 95%% to prevent clipping. Each voice is normalized independently to the same peak level, so all voices end up balanced. Default: {NORMALIZE_VOLUME}."
+    )
+    normalize_group.add_argument(
+        "--no-normalize-volume",
+        dest="normalize_volume",
+        action="store_false",
+        default=None,  # None means "use config default"
+        help="Disable volume normalization."
+    )
+    
+    parser.add_argument(
+        "--volume-adjust",
+        type=float,
+        default=None,
+        metavar="FACTOR",
+        help="Manual volume adjustment factor applied to all voices (e.g., 1.5 for +50%% boost, 0.8 for -20%% reduction). Applied before normalization if --normalize-volume is used. Useful for fine-tuning overall volume levels."
     )
     
     return parser.parse_args()
@@ -815,6 +862,12 @@ def main():
             else:
                 print("GENERATING CONVERSATION")
             print("="*60)
+            # Use config default if not explicitly set via command line
+            normalize_volume = args.normalize_volume if args.normalize_volume is not None else NORMALIZE_VOLUME
+            if normalize_volume:
+                print_progress("Volume normalization enabled - balancing quiet voices with louder ones")
+            if args.volume_adjust is not None:
+                print_progress(f"Volume adjustment: {args.volume_adjust:.2f}x ({'+' if args.volume_adjust > 1.0 else ''}{((args.volume_adjust - 1.0) * 100):.1f}%)")
             audio_files = generate_conversation(
                 model=model,
                 script_lines=script_lines,
@@ -822,7 +875,9 @@ def main():
                 output_dir=output_dir,
                 conversation_name=script_name,
                 output_format=args.output_format,
-                bitrate=args.bitrate
+                bitrate=args.bitrate,
+                normalize_volume=normalize_volume,
+                volume_adjust=args.volume_adjust
             )
             
             if not audio_files:

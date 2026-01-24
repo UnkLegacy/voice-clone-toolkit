@@ -12,7 +12,10 @@ from .progress import (
     handle_mp3_conversion_error, handle_audio_playback_error,
     with_error_handling
 )
-from .audio_utils import save_audio, play_audio, save_wav, ensure_output_dir, get_audio_info
+from .audio_utils import (
+    save_audio, play_audio, save_wav, ensure_output_dir, get_audio_info,
+    normalize_audio, adjust_volume
+)
 from .file_utils import (
     load_text_from_file_or_string, ensure_directory_exists, validate_file_exists,
     get_safe_filename, get_unique_filepath, read_text_file, write_text_file,
@@ -44,6 +47,7 @@ __all__ = [
     
     # Audio utilities
     'save_audio', 'play_audio', 'save_wav', 'ensure_output_dir', 'get_audio_info',
+    'normalize_audio', 'adjust_volume',
     
     # File utilities
     'load_text_from_file_or_string', 'ensure_directory_exists', 'validate_file_exists',

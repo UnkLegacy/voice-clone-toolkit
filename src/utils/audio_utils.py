@@ -58,6 +58,123 @@ def ensure_output_dir(output_dir: str = "output") -> None:
     Path(output_dir).mkdir(parents=True, exist_ok=True)
 
 
+def normalize_audio(audio_data: np.ndarray, target_level: float = 0.95, 
+                   method: str = "peak") -> np.ndarray:
+    """
+    Normalize audio data to a target level.
+    
+    This is useful for balancing volume levels across different voices or audio clips.
+    Each voice/clip is normalized independently to the same target level (e.g., 95% peak),
+    so all voices end up balanced against each other. For example:
+    - If DougDoug and Grandma are quiet, they'll be boosted to 95% peak
+    - If Sohee is loud, she'll be reduced to 95% peak
+    - All voices end up at the same level, balanced against each other
+    
+    Args:
+        audio_data: Audio data as numpy array (int16 or float)
+        target_level: Target peak level (0.0 to 1.0 for float, or 0 to 32767 for int16)
+                     Default 0.95 leaves some headroom to prevent clipping
+        method: Normalization method - "peak" (default) or "rms"
+                - "peak": Normalizes based on peak amplitude (prevents clipping)
+                - "rms": Normalizes based on RMS (root mean square) for perceived loudness
+    
+    Returns:
+        np.ndarray: Normalized audio data (same dtype as input)
+    
+    Examples:
+        # Normalize quiet audio to match other voices
+        normalized = normalize_audio(quiet_audio, target_level=0.95)
+        
+        # Use RMS normalization for better perceived loudness matching
+        normalized = normalize_audio(quiet_audio, target_level=0.7, method="rms")
+    """
+    if len(audio_data) == 0:
+        return audio_data
+    
+    # Convert to float for processing
+    is_int16 = audio_data.dtype == np.int16
+    if is_int16:
+        audio_float = audio_data.astype(np.float32) / 32768.0
+    else:
+        audio_float = audio_data.astype(np.float32)
+    
+    # Calculate current level
+    if method == "peak":
+        current_level = np.max(np.abs(audio_float))
+    elif method == "rms":
+        current_level = np.sqrt(np.mean(audio_float ** 2))
+    else:
+        raise ValueError(f"Unknown normalization method: {method}. Use 'peak' or 'rms'")
+    
+    # Avoid division by zero (silent audio)
+    if current_level < 1e-6:
+        return audio_data
+    
+    # Calculate gain factor
+    gain = target_level / current_level
+    
+    # Apply gain
+    normalized_float = audio_float * gain
+    
+    # Prevent clipping
+    normalized_float = np.clip(normalized_float, -1.0, 1.0)
+    
+    # Convert back to original dtype
+    if is_int16:
+        normalized = (normalized_float * 32767).astype(np.int16)
+    else:
+        normalized = normalized_float
+    
+    return normalized
+
+
+def adjust_volume(audio_data: np.ndarray, volume_factor: float) -> np.ndarray:
+    """
+    Adjust audio volume by a multiplication factor.
+    
+    Args:
+        audio_data: Audio data as numpy array (int16 or float)
+        volume_factor: Volume adjustment factor
+                      - 1.0 = no change
+                      - 2.0 = double volume (+6 dB)
+                      - 0.5 = half volume (-6 dB)
+                      - 0.0 = silence
+    
+    Returns:
+        np.ndarray: Volume-adjusted audio data (same dtype as input)
+    
+    Examples:
+        # Boost DougDoug voice by 50%
+        boosted = adjust_volume(dougdoug_audio, volume_factor=1.5)
+        
+        # Reduce Grandma voice by 20%
+        reduced = adjust_volume(grandma_audio, volume_factor=0.8)
+    """
+    if len(audio_data) == 0:
+        return audio_data
+    
+    # Convert to float for processing
+    is_int16 = audio_data.dtype == np.int16
+    if is_int16:
+        audio_float = audio_data.astype(np.float32) / 32768.0
+    else:
+        audio_float = audio_data.astype(np.float32)
+    
+    # Apply volume adjustment
+    adjusted_float = audio_float * volume_factor
+    
+    # Prevent clipping
+    adjusted_float = np.clip(adjusted_float, -1.0, 1.0)
+    
+    # Convert back to original dtype
+    if is_int16:
+        adjusted = (adjusted_float * 32767).astype(np.int16)
+    else:
+        adjusted = adjusted_float
+    
+    return adjusted
+
+
 def save_wav(filepath: str, audio_data: np.ndarray, sample_rate: int) -> None:
     """
     Save audio data to WAV file using wave module (no soundfile dependency).
@@ -88,7 +205,9 @@ def save_wav(filepath: str, audio_data: np.ndarray, sample_rate: int) -> None:
 
 
 def save_audio(filepath: str, audio_data: np.ndarray, sample_rate: int, 
-               output_format: str = "wav", bitrate: str = "192k") -> str:
+               output_format: str = "wav", bitrate: str = "192k",
+               normalize: bool = False, target_level: float = 0.95,
+               volume_adjust: Optional[float] = None) -> str:
     """
     Save audio data to file in specified format (WAV or MP3).
     
@@ -98,10 +217,34 @@ def save_audio(filepath: str, audio_data: np.ndarray, sample_rate: int,
         sample_rate: Sample rate in Hz
         output_format: Output format ("wav" or "mp3")
         bitrate: Bitrate for MP3 encoding (e.g., "192k", "320k")
+        normalize: If True, normalize audio to target_level before saving
+                   Useful for balancing volume levels across different voices
+        target_level: Target peak level for normalization (0.0 to 1.0)
+                     Default 0.95 leaves headroom to prevent clipping
+        volume_adjust: Optional volume adjustment factor (e.g., 1.5 for +50%, 0.8 for -20%)
+                      Applied before normalization if normalize is True
     
     Returns:
         str: Final output filepath (with correct extension)
+    
+    Examples:
+        # Save with volume normalization (balances quiet voices)
+        save_audio("output.wav", audio, sr, normalize=True)
+        
+        # Save with manual volume boost for quiet voices
+        save_audio("output.wav", audio, sr, volume_adjust=1.5)
+        
+        # Combine both: boost then normalize
+        save_audio("output.wav", audio, sr, normalize=True, volume_adjust=1.3)
     """
+    # Apply volume adjustment if specified
+    if volume_adjust is not None:
+        audio_data = adjust_volume(audio_data, volume_adjust)
+    
+    # Apply normalization if requested
+    if normalize:
+        audio_data = normalize_audio(audio_data, target_level=target_level)
+    
     # Always save as WAV first
     wav_path = str(Path(filepath).with_suffix('.wav'))
     save_wav(wav_path, audio_data, sample_rate)
