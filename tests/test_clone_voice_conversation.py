@@ -63,6 +63,57 @@ class TestLoadJsonConfig(unittest.TestCase):
             load_json_config(self.config_path)
 
 
+class TestLoadTextFromFileOrString(unittest.TestCase):
+    """Test text loading with proper binary file handling."""
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        self.test_dir = tempfile.mkdtemp()
+        
+    def tearDown(self):
+        """Clean up test fixtures."""
+        shutil.rmtree(self.test_dir)
+    
+    def test_load_text_file(self):
+        """Test loading actual text files works correctly."""
+        text_file = os.path.join(self.test_dir, "test.txt")
+        test_content = "This is test content"
+        
+        with open(text_file, 'w', encoding='utf-8') as f:
+            f.write(test_content)
+        
+        result = load_text_from_file_or_string(text_file)
+        self.assertEqual(result, test_content)
+    
+    def test_binary_file_returns_path(self):
+        """Test that binary files (like .wav) return the path without UTF-8 error."""
+        # Create a fake binary WAV file with non-UTF-8 bytes
+        wav_file = os.path.join(self.test_dir, "test.wav")
+        
+        # Write binary data that will fail UTF-8 decoding
+        with open(wav_file, 'wb') as f:
+            # Write WAV-like header with bytes that aren't valid UTF-8
+            f.write(b'RIFF\xfc\x00\x00\x00WAVEfmt ')
+        
+        # Should return the path without raising UTF-8 decode error
+        result = load_text_from_file_or_string(wav_file)
+        
+        # Should return the original path since it can't be read as text
+        self.assertEqual(result, wav_file)
+    
+    def test_nonexistent_file_returns_string(self):
+        """Test that non-existent paths are treated as literal strings."""
+        fake_path = "./nonexistent/file.wav"
+        result = load_text_from_file_or_string(fake_path)
+        self.assertEqual(result, fake_path)
+    
+    def test_literal_string_returned(self):
+        """Test that literal strings are returned as-is."""
+        literal = "This is just a string, not a file path"
+        result = load_text_from_file_or_string(literal)
+        self.assertEqual(result, literal)
+
+
 class TestParseScriptFormat(unittest.TestCase):
     """Test script format parsing."""
     

@@ -116,6 +116,22 @@ class TestLoadTextFromFile(unittest.TestCase):
         fake_path = "./nonexistent/file.txt"
         result = load_text_from_file_or_string(fake_path)
         self.assertEqual(result, fake_path)
+    
+    def test_binary_file_returns_path(self):
+        """Test that binary files (like .wav) return the path without UTF-8 error."""
+        # Create a fake binary WAV file with non-UTF-8 bytes
+        wav_file = os.path.join(self.test_dir, "test.wav")
+        
+        # Write binary data that will fail UTF-8 decoding
+        with open(wav_file, 'wb') as f:
+            # Write WAV-like header with bytes that aren't valid UTF-8
+            f.write(b'RIFF\xfc\x00\x00\x00WAVEfmt ')
+        
+        # Should return the path without raising UTF-8 decode error
+        result = load_text_from_file_or_string(wav_file)
+        
+        # Should return the original path since it can't be read as text
+        self.assertEqual(result, wav_file)
 
 
 class TestEnsureOutputDir(unittest.TestCase):

@@ -368,7 +368,7 @@ def create_voice_prompts(
         try:
             if profile_type == 'voice_clone':
                 # Standard voice clone profile
-                ref_audio = load_text_from_file_or_string(profile["voice_sample_file"])
+                ref_audio = profile["voice_sample_file"]  # Audio file path, don't try to read as text
                 ref_text = load_text_from_file_or_string(profile["sample_transcript"])
                 
                 if not os.path.exists(ref_audio):
@@ -510,7 +510,7 @@ def generate_conversation(
         try:
             # Generate audio for this line
             if tqdm:
-                with tqdm(total=1, desc=f"Generating line {i}", unit="sample", leave=False) as pbar:
+                with tqdm(total=1, desc=f"Generating line {i}", unit="sample", leave=False, file=sys.stderr) as pbar:
                     wavs, sr = model.generate_voice_clone(
                         text=dialogue,
                         language="English",
