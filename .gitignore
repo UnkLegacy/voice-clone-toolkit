@@ -65,7 +65,7 @@ input/*
 
 # Keep directory structure
 !output/.gitkeep
-!Qwen_Models/.gitkeep
+!Qwen_Models/README.md
 
 # OS specific
 .DS_Store
