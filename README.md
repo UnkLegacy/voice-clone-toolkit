@@ -19,7 +19,7 @@ All scripts are located in the `src/` directory:
 - **src/clone_voice.py** - Clone voices and generate speech with single or multiple voice profiles
 - **src/clone_voice_conversation.py** - Generate conversations between multiple cloned voices with script support
 - **src/voice_design.py** - Design custom voices using natural language descriptions
-- **src/voice_design_clone.py** - Combine voice design with cloning for consistent character voices
+- **src/voice_design_clone.py** - Combine voice design with cloning for consistent voices
 - **src/custom_voice.py** - Generate speech with custom voice models
 
 ## 📋 Table of Contents
@@ -36,7 +36,7 @@ All scripts are located in the `src/` directory:
 
 ## 📚 Documentation
 
-- **[Conversation Guide](documentation/CONVERSATION_GUIDE.md)** - Complete guide for creating multi-actor conversations
+- **[Conversation Guide](documentation/CONVERSATION_GUIDE.md)** - Complete guide for creating multi-voice conversations
 - **[GPU Compatibility](documentation/GPU_COMPATIBILITY.md)** - PyTorch and CUDA installation for different GPU generations
 - **[Project Structure](documentation/PROJECT_STRUCTURE.md)** - Detailed project directory structure and organization
 - **[Testing Guide](documentation/TESTING.md)** - How to run and write unit tests
@@ -299,9 +299,9 @@ Custom voice profiles are stored in `config/custom_voice_profiles.json`. These p
 }
 ```
 
-**Default Profiles:** A reference configuration file (`config/default_custom_voice_profiles.json`) contains the original profiles in their native languages (Chinese, Japanese, Korean, English). The active `custom_voice_profiles.json` file is pre-configured with English translations for easier editing, while preserving the original character personalities and voice instructions.
+**Default Profiles:** A reference configuration file (`config/default_custom_voice_profiles.json`) contains the original profiles in their native languages (Chinese, Japanese, Korean, English). The active `custom_voice_profiles.json` file is pre-configured with English translations for easier editing, while preserving the original voice personalities and voice instructions.
 
-**Note:** While all speakers can speak English, characters like Vivian, Serena, Uncle_Fu, Dylan, and Eric maintain their Chinese accents, Ono_Anna retains a Japanese accent, and Sohee maintains a Korean accent as part of their character profiles.
+**Note:** While all speakers can speak English, voices like Vivian, Serena, Uncle_Fu, Dylan, and Eric maintain their Chinese accents, Ono_Anna retains a Japanese accent, and Sohee maintains a Korean accent as part of their voice profiles.
 
 #### Using Text Files for Longer Content
 
@@ -367,10 +367,10 @@ python src/clone_voice.py --voice DougDoug
 
 ```bash
 # Process multiple voices in one run
-python clone_voice.py --voices DougDoug Grandma
+python src/clone_voice.py --voices DougDoug Grandma
 
 # Process all three example profiles
-python clone_voice.py --voices DougDoug Grandma Example_Grandma
+python src/clone_voice.py --voices DougDoug Grandma Example_Grandma
 ```
 
 ### List Available Voice Profiles
@@ -449,7 +449,7 @@ Each voice profile in `config/voice_clone_profiles.json` contains:
 
 ```bash
 # Uses the DEFAULT_VOICE setting from the script
-python clone_voice.py --only-single --no-play
+python src/clone_voice.py --only-single --no-play
 ```
 
 ### Example 1b: Process Multiple Default Voices
@@ -461,28 +461,28 @@ DEFAULT_VOICE = ["DougDoug", "Grandma"]
 
 ```bash
 # Then run without arguments to process all default voices
-python clone_voice.py
+python src/clone_voice.py
 ```
 
 ### Example 2: Generate Multiple Samples
 
 ```bash
 # Generate only batch outputs with DougDoug voice
-python clone_voice.py --voice DougDoug --only-batch
+python src/clone_voice.py --voice DougDoug --only-batch
 ```
 
 ### Example 3: Silent Batch Processing
 
 ```bash
 # Generate all outputs without playback (good for batch processing)
-python clone_voice.py --voice Grandma --no-play
+python src/clone_voice.py --voice Grandma --no-play
 ```
 
 ### Example 4: Full Pipeline
 
 ```bash
 # Run both single and batch with playback
-python clone_voice.py --voice DougDoug
+python src/clone_voice.py --voice DougDoug
 ```
 
 ### Example 5: Generate Multiple Runs for Comparison (Batch Runs)
@@ -521,7 +521,7 @@ output/Clone_Voice/DougDoug/
 
 ```bash
 # List all configured voice profiles
-python clone_voice.py --list-voices
+python src/clone_voice.py --list-voices
 ```
 
 Output:
@@ -548,7 +548,7 @@ Grandma:
 
 ```bash
 # Generate the same text as the reference audio to compare quality
-python clone_voice.py --voice DougDoug --compare --only-single
+python src/clone_voice.py --voice DougDoug --compare --only-single
 ```
 
 This is useful for:
@@ -565,14 +565,14 @@ In compare mode, the script will:
 
 ```bash
 # Generate outputs for multiple voice profiles in one run
-python clone_voice.py --voices DougDoug Grandma
+python src/clone_voice.py --voices DougDoug Grandma
 
 # Process multiple voices with specific settings
-python clone_voice.py --voices DougDoug Grandma Example_Grandma --only-single --no-play
+python src/clone_voice.py --voices DougDoug Grandma Example_Grandma --only-single --no-play
 
 # Or set multiple voices as default in the config
 # In clone_voice.py: DEFAULT_VOICE = ["DougDoug", "Grandma"]
-python clone_voice.py
+python src/clone_voice.py
 ```
 
 **Benefits:**
@@ -643,10 +643,10 @@ When processing multiple voices with `--voices`, each voice creates its own subd
 **Solution**: 
 ```bash
 # Check available profiles
-python clone_voice.py --list-voices
+python src/clone_voice.py --list-voices
 
 # Use an existing profile
-python clone_voice.py --voice DougDoug
+python src/clone_voice.py --voice DougDoug
 ```
 
 #### "Reference audio not found"
@@ -668,7 +668,7 @@ python clone_voice.py --voice DougDoug
 pip install pygame
 
 # Or run without playback
-python clone_voice.py --no-play
+python src/clone_voice.py --no-play
 ```
 
 #### "CUDA out of memory"
@@ -716,27 +716,13 @@ This confirms that the file was successfully loaded. If you see "Using value as 
    - Keep models on fast storage (SSD)
    - Default location: `Qwen_Models/Qwen3-TTS-12Hz-1.7B-Base/`
 
-## 📄 License
-
-This project uses the Qwen3-TTS model. Please refer to the [Qwen3-TTS license](https://github.com/QwenLM/Qwen3-TTS) for usage terms.
-
-## 🤝 Contributing
-
-Feel free to submit issues, fork the repository, and create pull requests for any improvements.
-
-## 📧 Support
-
-For issues related to:
-- **Script functionality**: Open an issue in this repository
-- **Qwen3-TTS model**: Visit the [official Qwen3-TTS repository](https://github.com/QwenLM/Qwen3-TTS)
-
 ## 🎭 Conversation Scripts (clone_voice_conversation.py)
 
 ### Overview
 
 Generate realistic conversations between multiple cloned voices using script files. Perfect for:
 - Podcasts and dialogues
-- Character interactions
+- Voice interactions
 - Educational content
 - Storytelling with multiple narrators
 
@@ -766,7 +752,7 @@ Conversation scripts are defined in `config/conversation_scripts.json`:
 ```json
 {
   "my_conversation": {
-    "actors": ["DougDoug", "Example_Grandma"],
+    "voices": ["DougDoug", "Example_Grandma"],
     "script": [
       "[DougDoug] Hi Grandma, how are you?",
       "[Example_Grandma] I'm doing great, dear!",
@@ -781,9 +767,9 @@ Conversation scripts are defined in `config/conversation_scripts.json`:
 **Inline script (in JSON):**
 ```json
 "script": [
-  "[Actor1] First line of dialogue",
-  "[Actor2] Second line of dialogue",
-  "[Actor1] Third line back to Actor1"
+  "[Voice1] First line of dialogue",
+  "[Voice2] Second line of dialogue",
+  "[Voice1] Third line back to Voice1"
 ]
 ```
 
@@ -830,7 +816,7 @@ The project includes several example conversations:
 
 ### Creating Custom Scripts
 
-**Note:** Actors can come from ANY profile type! You can mix:
+**Note:** Voices can come from ANY profile type! You can mix:
 - Voice clones (from `voice_clone_profiles.json`)
 - Custom voices (from `custom_voice_profiles.json` - e.g., Ryan, Sohee)
 - Voice designs (from `voice_design_profiles.json` - e.g., Incredulous_Panic)
@@ -840,7 +826,7 @@ The project includes several example conversations:
 ```json
 {
   "mixed_conversation": {
-    "actors": ["DougDoug", "Sohee", "Incredulous_Panic", "Confident_Professional"],
+    "voices": ["DougDoug", "Sohee", "Incredulous_Panic", "Confident_Professional"],
     "script": [
       "[DougDoug] Hey everyone, we have special guests!",
       "[Sohee] 안녕하세요! Happy to be here!",
@@ -851,26 +837,26 @@ The project includes several example conversations:
 }
 ```
 
-1. **Add actors to profiles** (if not already present - choose appropriate type):
+1. **Add voices to profiles** (if not already present - choose appropriate type):
    ```json
    // Option A: Voice clone (config/voice_clone_profiles.json)
    {
-     "MyActor": {
-       "voice_sample_file": "./input/MyActor.wav",
+     "MyVoice": {
+       "voice_sample_file": "./input/MyVoice.wav",
        "sample_transcript": "Reference transcript..."
      }
    }
    
    // Option B: Use existing custom voice speakers (Ryan, Sohee, etc.)
    // Option C: Use existing voice design profiles
-   // Option D: Use existing voice design+clone characters
+   // Option D: Use existing voice design+clone voices
    ```
 
 2. **Create script file** (optional):
    ```
    // In conversation_scripts/my_script.txt
-   [MyActor] Hello, this is my first line!
-   [OtherActor] And this is my response!
+   [MyVoice] Hello, this is my first line!
+   [OtherVoice] And this is my response!
    ```
 
 3. **Add to conversation config**:
@@ -878,7 +864,7 @@ The project includes several example conversations:
    // In config/conversation_scripts.json
    {
      "my_custom_script": {
-       "actors": ["MyActor", "OtherActor"],
+       "voices": ["MyVoice", "OtherVoice"],
        "script": "./scripts/my_script.txt"
      }
    }
@@ -894,7 +880,7 @@ The project includes several example conversations:
 - **Natural Dialogue**: Write as people actually speak (contractions, interruptions, etc.)
 - **Punctuation**: Use commas, periods, and exclamation points to control pacing
 - **Line Length**: Keep individual lines conversational (1-3 sentences)
-- **Actor Consistency**: Ensure actor names match voice profile names exactly
+- **Voice Consistency**: Ensure voice names match voice profile names exactly
 - **Test First**: Start with short scripts to verify voice quality
 
 ## 📄 License

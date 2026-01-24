@@ -332,14 +332,14 @@ def load_model(model_path: str = "Qwen_Models/Qwen3-TTS-12Hz-1.7B-Base") -> Qwen
     return model
 
 
-def create_actor_prompts(
+def create_voice_prompts(
     base_model: Qwen3TTSModel,
-    actors: List[str],
+    voices: List[str],
     voice_profiles: Dict[str, Any],
     temp_dir: str = "output/Conversations/_temp"
 ) -> Dict[str, Any]:
     """
-    Create voice clone prompts for all actors in the conversation.
+    Create voice clone prompts for all voices in the conversation.
     Handles different profile types by converting them to voice clone prompts.
     
     Args:
@@ -621,7 +621,7 @@ def list_scripts(conversation_scripts: Dict[str, Any]):
     print("="*60)
     for name, script_data in conversation_scripts.items():
         print(f"\n{name}:")
-        print(f"  Voices: {', '.join(script_data.get('actors', []))}")
+        print(f"  Voices: {', '.join(script_data.get('voices', []))}")
         script = script_data.get('script', [])
         if isinstance(script, str):
             lines_count = len([l for l in script.split('\n') if l.strip()])
@@ -698,7 +698,7 @@ def main():
         sys.exit(1)
     
     script_data = conversation_scripts[script_name]
-    voices = script_data.get("actors", [])
+    voices = script_data.get("voices", [])
     script_content = script_data.get("script", [])
     
     # Load script content from file if needed

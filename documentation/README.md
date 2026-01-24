@@ -5,8 +5,8 @@ Comprehensive documentation for the Voice Clone Toolkit project.
 ## 📚 Available Documentation
 
 ### [Conversation Guide](CONVERSATION_GUIDE.md)
-Complete guide for creating multi-actor conversations with cloned voices. Learn how to:
-- Write conversation scripts in the `[Actor] dialogue` format
+Complete guide for creating multi-voice conversations with cloned voices. Learn how to:
+- Write conversation scripts in the `[VoiceName] dialogue` format
 - Configure conversation scripts in JSON
 - Generate multi-speaker audio files
 - Concatenate conversation lines into full dialogues

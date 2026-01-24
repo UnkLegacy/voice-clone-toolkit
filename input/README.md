@@ -42,7 +42,7 @@ For best voice cloning results:
 
 3. **Run voice cloning:**
    ```bash
-   python Clone_Voice.py --voice MyVoice
+   python src/clone_voice.py --voice MyVoice
    ```
 
 ## Tips for Quality

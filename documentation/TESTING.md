@@ -26,7 +26,7 @@ The project includes comprehensive unit tests for:
 
 ### clone_voice_conversation.py
 - ✅ JSON configuration loading
-- ✅ Script format parsing (`[Actor] dialogue`)
+- ✅ Script format parsing (`[VoiceName] dialogue`)
 - ✅ Script list parsing
 - ✅ Audio file operations
 - ✅ Command-line argument parsing

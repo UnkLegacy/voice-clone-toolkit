@@ -1,6 +1,6 @@
 # Clone Voice Conversation - Complete Guide
 
-Generate realistic multi-character conversations using cloned voices with the `Clone_Voice_Conversation.py` script.
+Generate realistic multi-voice conversations using cloned voices with the `Clone_Voice_Conversation.py` script.
 
 ## Table of Contents
 
@@ -14,10 +14,10 @@ Generate realistic multi-character conversations using cloned voices with the `C
 
 ## Overview
 
-The Conversation Script Generator combines voice cloning with dialogue generation to create realistic multi-character conversations. It:
+The Conversation Script Generator combines voice cloning with dialogue generation to create realistic multi-voice conversations. It:
 
 - ✅ Loads multiple voice profiles simultaneously
-- ✅ Parses conversation scripts with `[Actor] dialogue` format
+- ✅ Parses conversation scripts with `[VoiceName] dialogue` format
 - ✅ Generates audio for each line in sequence
 - ✅ Creates individual line files AND a combined conversation file
 - ✅ Supports both inline scripts and external script files
@@ -46,15 +46,15 @@ AVAILABLE CONVERSATION SCRIPTS
 ============================================================
 
 example_conversation:
-  Actors: DougDoug, Example_Grandma
+  Voices: DougDoug, Example_Grandma
   Lines: 8
 
 tech_discussion:
-  Actors: DougDoug, Example_Grandma
+  Voices: DougDoug, Example_Grandma
   Lines: 9
 
 script_file_example:
-  Actors: DougDoug, Example_Grandma
+  Voices: DougDoug, Example_Grandma
   Lines: 9
 ============================================================
 ```
@@ -71,7 +71,7 @@ python src/clone_voice_conversation.py --script tech_discussion
 
 The system uses two configuration files:
 
-1. **`config/voice_clone_profiles.json`** - Voice profiles (shared with Clone_Voice.py)
+1. **`config/voice_clone_profiles.json`** - Voice profiles (shared with clone_voice.py)
 2. **`config/conversation_scripts.json`** - Conversation scripts (specific to conversations)
 
 ### conversation_scripts.json Structure
@@ -79,10 +79,10 @@ The system uses two configuration files:
 ```json
 {
   "script_name": {
-    "actors": ["Actor1", "Actor2"],
+    "voices": ["Voice1", "Voice2"],
     "script": [
-      "[Actor1] First line",
-      "[Actor2] Second line"
+      "[Voice1] First line",
+      "[Voice2] Second line"
     ]
   }
 }
@@ -92,7 +92,7 @@ The system uses two configuration files:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `actors` | array | Yes | List of actor names (must match voice profiles) |
+| `voices` | array | Yes | List of voice names (must match voice profiles) |
 | `script` | array or string | Yes | Either inline dialogue or path to script file |
 
 ## Script Format
@@ -104,7 +104,7 @@ Define the script directly in the JSON config:
 ```json
 {
   "my_conversation": {
-    "actors": ["DougDoug", "Example_Grandma"],
+    "voices": ["DougDoug", "Example_Grandma"],
     "script": [
       "[DougDoug] Hey Grandma!",
       "[Example_Grandma] Hello dear!",
@@ -132,7 +132,7 @@ Store scripts in separate `.txt` files:
 ```json
 {
   "podcast_episode": {
-    "actors": ["Host", "Guest"],
+    "voices": ["Host", "Guest"],
     "script": "./conversation_scripts/podcast_episode_1.txt"
   }
 }
@@ -158,9 +158,9 @@ Store scripts in separate `.txt` files:
 
 ### Script Syntax Rules
 
-1. **Format:** `[ActorName] Dialogue text`
-2. **Actor names** must be enclosed in square brackets `[` `]`
-3. **Actor names** must match voice profile names exactly (case-sensitive)
+1. **Format:** `[VoiceName] Dialogue text`
+2. **Voice names** must be enclosed in square brackets `[` `]`
+3. **Voice names** must match voice profile names exactly (case-sensitive)
 4. **Space** required between `]` and dialogue text
 5. **Empty lines** are ignored
 6. **Malformed lines** are skipped with a warning
@@ -175,7 +175,7 @@ Store scripts in separate `.txt` files:
 ```
 DougDoug This won't work - missing brackets
 [DougDoug]This won't work - missing space
-This line has no actor - will be skipped
+This line has no voice name - will be skipped
 ```
 
 ## Usage Examples
@@ -256,7 +256,7 @@ Useful for:
 // In config/conversation_scripts.json
 {
   "my_story": {
-    "actors": ["Narrator", "DougDoug", "Example_Grandma"],
+    "voices": ["Narrator", "DougDoug", "Example_Grandma"],
     "script": "./conversation_scripts/my_story.txt"
   }
 }
@@ -285,14 +285,14 @@ Change `silence_duration` to adjust:
 - `0.5` - Slower pacing
 - `1.0` - Dramatic pauses
 
-### Multiple Actors
+### Multiple Voices
 
-The system supports conversations with any number of actors:
+The system supports conversations with any number of voices:
 
 ```json
 {
   "panel_discussion": {
-    "actors": ["Host", "Guest1", "Guest2", "Guest3"],
+    "voices": ["Host", "Guest1", "Guest2", "Guest3"],
     "script": [
       "[Host] Welcome everyone to the panel!",
       "[Guest1] Thanks for having us!",
@@ -311,14 +311,14 @@ You can mix inline and file-based scripts in the same config:
 ```json
 {
   "quick_greeting": {
-    "actors": ["A", "B"],
+    "voices": ["A", "B"],
     "script": [
       "[A] Hi!",
       "[B] Hey!"
     ]
   },
   "long_story": {
-    "actors": ["Narrator"],
+    "voices": ["Narrator"],
     "script": "./conversation_scripts/long_story.txt"
   }
 }
@@ -326,13 +326,13 @@ You can mix inline and file-based scripts in the same config:
 
 ## Troubleshooting
 
-### "Actor not found in voice profiles"
+### "Voice not found in voice profiles"
 
-**Problem:** The script references an actor that doesn't have a voice profile.
+**Problem:** The script references a voice that doesn't have a voice profile.
 
 **Solution:**
 1. Check spelling and capitalization in both files
-2. Add the actor to `config/voice_clone_profiles.json`
+2. Add the voice to `config/voice_clone_profiles.json`
 3. Ensure the voice sample file exists
 
 ### "Reference audio not found"
@@ -346,11 +346,11 @@ You can mix inline and file-based scripts in the same config:
 
 ### "Skipping malformed line"
 
-**Problem:** A script line doesn't match the `[Actor] dialogue` format.
+**Problem:** A script line doesn't match the `[VoiceName] dialogue` format.
 
 **Solution:**
-1. Check that actor name is in square brackets: `[ActorName]`
-2. Ensure there's a space after the closing bracket: `[Actor] text`
+1. Check that voice name is in square brackets: `[VoiceName]`
+2. Ensure there's a space after the closing bracket: `[VoiceName] text`
 3. Remove any empty lines if they're causing issues
 4. Check for special characters that might break parsing
 
@@ -370,8 +370,8 @@ This shouldn't happen - the script processes lines sequentially. If it does:
 **Solution:**
 1. Verify voice sample files are high quality
 2. Check that `sample_transcript` accurately matches the audio
-3. Try the voice in `Clone_Voice.py` first to test quality
-4. Use `--compare` mode in `Clone_Voice.py` to verify cloning quality
+3. Try the voice in `clone_voice.py` first to test quality
+4. Use `--compare` mode in `clone_voice.py` to verify cloning quality
 
 ### Memory Issues
 
@@ -395,15 +395,15 @@ This shouldn't happen - the script processes lines sequentially. If it does:
 
 ### Voice Consistency
 
-✓ **Test voices individually first** with `Clone_Voice.py`  
+✓ **Test voices individually first** with `clone_voice.py`  
 ✓ **Use high-quality reference audio** (clear, no background noise)  
 ✓ **Keep reference transcripts accurate** (exact match to audio)  
-✓ **Use appropriate text** for each character's personality  
+✓ **Use appropriate text** for each voice's personality  
 
 ### Technical Tips
 
 ✓ **Start small:** Test with 3-4 lines before generating long scripts  
-✓ **Name consistently:** Use same actor names throughout  
+✓ **Name consistently:** Use same voice names throughout  
 ✓ **Organize files:** Keep scripts in `scripts/` directory  
 ✓ **Version control:** Track both config and script files  
 ✓ **Backup outputs:** Save successful generations  
@@ -412,17 +412,17 @@ This shouldn't happen - the script processes lines sequentially. If it does:
 
 **Typical Generation Times:**
 - Model loading: 10-30 seconds (one-time)
-- Voice prompt creation: 2-5 seconds per actor (one-time)
+- Voice prompt creation: 2-5 seconds per voice (one-time)
 - Line generation: 1-3 seconds per line
 - Concatenation: <1 second
 
-**Example:** A 10-line conversation with 2 actors:
+**Example:** A 10-line conversation with 2 voices:
 - Initial setup: ~20 seconds
 - Generation: ~15-30 seconds
 - Total: ~35-50 seconds
 
 **Efficiency Tips:**
-- Actors' voice prompts are created once and reused
+- Voice prompts are created once and reused
 - GPU is significantly faster than CPU
 - Longer lines take slightly more time but not proportionally
 
@@ -431,7 +431,7 @@ This shouldn't happen - the script processes lines sequentially. If it does:
 1. **Prepare voices:**
    ```bash
    # Test your voices first
-   python Clone_Voice.py --voice DougDoug --compare --only-single
+   python src/clone_voice.py --voice DougDoug --compare --only-single
    ```
 
 2. **Write script:**
@@ -444,7 +444,7 @@ This shouldn't happen - the script processes lines sequentially. If it does:
    ```json
    {
      "my_conversation": {
-       "actors": ["DougDoug", "Example_Grandma"],
+       "voices": ["DougDoug", "Example_Grandma"],
        "script": "./conversation_scripts/my_conversation.txt"
      }
    }
@@ -465,7 +465,7 @@ This shouldn't happen - the script processes lines sequentially. If it does:
 
 For issues with:
 - **Script functionality:** Check this guide and the README.md
-- **Voice quality:** Verify with `Clone_Voice.py` first
+- **Voice quality:** Verify with `clone_voice.py` first
 - **Model issues:** Visit [Qwen3-TTS repository](https://github.com/QwenLM/Qwen3-TTS)
 
 ---

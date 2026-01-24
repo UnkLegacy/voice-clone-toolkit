@@ -67,22 +67,22 @@ class TestParseScriptFormat(unittest.TestCase):
     
     def test_parse_valid_script(self):
         """Test parsing valid script format."""
-        script = """[Actor1] Hello there!
-[Actor2] Hi, how are you?
-[Actor1] I'm doing great, thanks!"""
+        script = """[Voice1] Hello there!
+[Voice2] Hi, how are you?
+[Voice1] I'm doing great, thanks!"""
         
         result = parse_script_format(script)
         
         self.assertEqual(len(result), 3)
-        self.assertEqual(result[0], ("Actor1", "Hello there!"))
-        self.assertEqual(result[1], ("Actor2", "Hi, how are you?"))
-        self.assertEqual(result[2], ("Actor1", "I'm doing great, thanks!"))
+        self.assertEqual(result[0], ("Voice1", "Hello there!"))
+        self.assertEqual(result[1], ("Voice2", "Hi, how are you?"))
+        self.assertEqual(result[2], ("Voice1", "I'm doing great, thanks!"))
     
     def test_parse_with_empty_lines(self):
         """Test parsing script with empty lines."""
-        script = """[Actor1] First line
+        script = """[Voice1] First line
 
-[Actor2] Second line
+[Voice2] Second line
 
 """
         result = parse_script_format(script)
@@ -90,20 +90,20 @@ class TestParseScriptFormat(unittest.TestCase):
     
     def test_parse_malformed_lines(self):
         """Test that malformed lines are skipped."""
-        script = """[Actor1] Valid line
-This line has no actor
-[Actor2] Another valid line"""
+        script = """[Voice1] Valid line
+This line has no voice name
+[Voice2] Another valid line"""
         
         result = parse_script_format(script)
         self.assertEqual(len(result), 2)
-        self.assertEqual(result[0][0], "Actor1")
-        self.assertEqual(result[1][0], "Actor2")
+        self.assertEqual(result[0][0], "Voice1")
+        self.assertEqual(result[1][0], "Voice2")
     
     def test_parse_with_extra_brackets(self):
         """Test parsing lines with brackets in dialogue."""
-        script = "[Actor] This is [important] information!"
+        script = "[Voice] This is [important] information!"
         result = parse_script_format(script)
-        self.assertEqual(result[0], ("Actor", "This is [important] information!"))
+        self.assertEqual(result[0], ("Voice", "This is [important] information!"))
 
 
 class TestParseScriptList(unittest.TestCase):
@@ -112,23 +112,23 @@ class TestParseScriptList(unittest.TestCase):
     def test_parse_valid_list(self):
         """Test parsing valid script list."""
         script_list = [
-            "[Actor1] Line 1",
-            "[Actor2] Line 2",
-            "[Actor1] Line 3"
+            "[Voice1] Line 1",
+            "[Voice2] Line 2",
+            "[Voice1] Line 3"
         ]
         
         result = parse_script_list(script_list)
         
         self.assertEqual(len(result), 3)
-        self.assertEqual(result[0], ("Actor1", "Line 1"))
-        self.assertEqual(result[1], ("Actor2", "Line 2"))
+        self.assertEqual(result[0], ("Voice1", "Line 1"))
+        self.assertEqual(result[1], ("Voice2", "Line 2"))
     
     def test_parse_empty_strings(self):
         """Test that empty strings are skipped."""
         script_list = [
-            "[Actor1] Line 1",
+            "[Voice1] Line 1",
             "",
-            "[Actor2] Line 2"
+            "[Voice2] Line 2"
         ]
         
         result = parse_script_list(script_list)
@@ -137,12 +137,12 @@ class TestParseScriptList(unittest.TestCase):
     def test_parse_whitespace_handling(self):
         """Test proper whitespace handling."""
         script_list = [
-            "  [Actor1]   Line with spaces  ",
-            "[Actor2] Normal line"
+            "  [Voice1]   Line with spaces  ",
+            "[Voice2] Normal line"
         ]
         
         result = parse_script_list(script_list)
-        self.assertEqual(result[0], ("Actor1", "Line with spaces"))
+        self.assertEqual(result[0], ("Voice1", "Line with spaces"))
 
 
 class TestSaveWav(unittest.TestCase):
@@ -189,10 +189,10 @@ class TestListScripts(unittest.TestCase):
         """Test listing scripts with inline content."""
         test_scripts = {
             "script1": {
-                "actors": ["Actor1", "Actor2"],
+                "voices": ["Voice1", "Voice2"],
                 "script": [
-                    "[Actor1] Line 1",
-                    "[Actor2] Line 2"
+                    "[Voice1] Line 1",
+                    "[Voice2] Line 2"
                 ]
             }
         }
@@ -205,7 +205,7 @@ class TestListScripts(unittest.TestCase):
         """Test listing scripts with file references."""
         test_scripts = {
             "script1": {
-                "actors": ["Actor1"],
+                "voices": ["Voice1"],
                 "script": "./scripts/test.txt"
             }
         }

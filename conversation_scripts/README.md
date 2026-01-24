@@ -7,7 +7,7 @@ This directory contains script files for conversation generation.
 Each line should follow this format:
 
 ```
-[ActorName] Dialogue text here
+[VoiceName] Dialogue text here
 ```
 
 ### Example
@@ -20,17 +20,17 @@ Each line should follow this format:
 
 ## Rules
 
-1. Each line must start with `[ActorName]` where ActorName matches a voice profile
-2. The actor name must be enclosed in square brackets
+1. Each line must start with `[VoiceName]` where VoiceName matches a voice profile
+2. The voice name must be enclosed in square brackets
 3. After the closing bracket, include a space and then the dialogue
 4. Empty lines are ignored
-5. Lines without proper `[Actor]` format will be skipped with a warning
+5. Lines without proper `[VoiceName]` format will be skipped with a warning
 
-## Actor Names
+## Voice Names
 
-Actor names must match voice profiles defined in `config/voice_clone_profiles.json`
+Voice names must match voice profiles defined in `config/voice_clone_profiles.json`
 
-**Available actors (as of now):**
+**Available voices (as of now):**
 - `DougDoug`
 - `Grandma`
 - `Example_Grandma`
@@ -44,7 +44,7 @@ Actor names must match voice profiles defined in `config/voice_clone_profiles.js
 ```json
 {
   "my_conversation": {
-    "actors": ["DougDoug", "Grandma"],
+    "voices": ["DougDoug", "Grandma"],
     "script": "./conversation_scripts/my_conversation.txt"
   }
 }

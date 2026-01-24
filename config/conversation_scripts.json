@@ -1,6 +1,6 @@
 {
   "example_conversation": {
-    "actors": ["DougDoug", "Example_Grandma"],
+    "voices": ["DougDoug", "Example_Grandma"],
     "script": [
       "[DougDoug] Hi Grandma, how are you doing today?",
       "[Example_Grandma] Oh hi DouglassDouglass, I'm doing good. How about you?",
@@ -13,7 +13,7 @@
     ]
   },
   "tech_discussion": {
-    "actors": ["DougDoug", "Example_Grandma"],
+    "voices": ["DougDoug", "Example_Grandma"],
     "script": [
       "[DougDoug] Hey Grandma, did you see that new graphics card that came out?",
       "[Example_Grandma] I don't think that PC will ever be back in stock, I imagine if it ever does, bots will snatch it up before a person can, heh.",
@@ -27,11 +27,11 @@
     ]
   },
   "script_file_example": {
-    "actors": ["DougDoug", "Example_Grandma"],
+    "voices": ["DougDoug", "Example_Grandma"],
     "script": "./conversation_scripts/example_script.txt"
   },
   "mixed_profile_types": {
-    "actors": ["DougDoug", "Sohee", "Incredulous_Panic", "Confident_Professional"],
+    "voices": ["DougDoug", "Sohee", "Incredulous_Panic", "Confident_Professional"],
     "script": [
       "[DougDoug] Hey everyone! Today we have some special guests joining us!",
       "[Sohee] 안녕하세요! I'm so happy to be here today!",

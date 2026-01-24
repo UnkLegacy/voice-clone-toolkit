@@ -86,7 +86,7 @@ Main Python scripts located in `src/` directory:
 | File | Purpose |
 |------|---------|
 | `src/clone_voice.py` | Main voice cloning with single/batch generation |
-| `src/clone_voice_conversation.py` | Multi-actor conversation generation |
+| `src/clone_voice_conversation.py` | Multi-voice conversation generation |
 | `src/custom_voice.py` | Custom voice model generation |
 | `src/voice_design.py` | Design voices with natural language |
 | `src/voice_design_clone.py` | Combine voice design with cloning |
@@ -118,7 +118,7 @@ Contains GitHub-specific configuration:
 Contains JSON configuration files:
 
 - **voice_clone_profiles.json**: Voice profiles with reference audio, transcripts, and generation texts
-- **conversation_scripts.json**: Conversation scripts with actors and dialogues
+- **conversation_scripts.json**: Conversation scripts with voices and dialogues
 
 ### Input (`input/`)
 
@@ -140,15 +140,15 @@ Text content files that can be referenced in configs:
 
 Conversation script files:
 
-- Text files with `[Actor] dialogue` format
+- Text files with `[VoiceName] dialogue` format
 - Referenced in `conversation_scripts.json`
-- Can contain multi-actor conversations
+- Can contain multi-voice conversations
 
 ### Tests (`tests/`)
 
 Unit tests for all scripts:
 
-- `test_clone_voice.py`: Tests for Clone_Voice.py
+- `test_clone_voice.py`: Tests for clone_voice.py
 - `test_clone_voice_conversation.py`: Tests for Clone_Voice_Conversation.py
 - Run with `python run_tests.py`
 
@@ -194,8 +194,8 @@ The following are **not committed** to git:
 
 **Conversations:**
 ```
-{script_name}_line_001_{actor}.wav  # Individual line
-{script_name}_line_002_{actor}.wav  # Next line
+{script_name}_line_001_{voice}.wav  # Individual line
+{script_name}_line_002_{voice}.wav  # Next line
 {script_name}_full.wav              # Concatenated audio
 ```
 
