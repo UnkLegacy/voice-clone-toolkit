@@ -37,7 +37,7 @@ try:
         while mixer.music.get_busy():
             import time
             time.sleep(0.1)
-except ImportError:
+except (ImportError, Exception):
     try:
         import winsound  # type: ignore
         def playsound(filepath: str):
