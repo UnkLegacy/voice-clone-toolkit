@@ -1,5 +1,7 @@
 # Qwen3-TTS Voice Clone Scripts
 
+[![Tests](https://github.com/UnkLegacy/Qwen3-TTS_Scripts/actions/workflows/tests.yml/badge.svg)](https://github.com/UnkLegacy/Qwen3-TTS_Scripts/actions/workflows/tests.yml)
+
 A collection of Python scripts for voice cloning and text-to-speech generation using the Qwen3-TTS models.
 
 ## 🔗 Based On
@@ -71,7 +73,7 @@ For detailed installation instructions, troubleshooting, and platform-specific n
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.10 or higher (required by PyTorch)
 - CUDA-capable GPU (recommended) or CPU
 - PyTorch with CUDA support (if using GPU)
 
@@ -128,7 +130,7 @@ On Windows, if pygame installation fails, the script will fall back to the built
 
 ## 🧪 Testing
 
-The project includes comprehensive unit tests for all scripts.
+The project includes comprehensive unit tests for all scripts with automated CI/CD via GitHub Actions.
 
 ### Run All Tests
 
@@ -152,6 +154,13 @@ python -m unittest tests.test_clone_voice.TestLoadVoiceProfiles
 # Test a specific method
 python -m unittest tests.test_clone_voice.TestLoadVoiceProfiles.test_load_valid_profiles
 ```
+
+### Automated Testing (CI/CD)
+
+All tests run automatically via GitHub Actions on every push:
+- ✅ Tests against Python 3.10, 3.11, and 3.12
+- ✅ View results in the **Actions** tab or via the badge at the top of this README
+- ✅ Configuration: `.github/workflows/tests.yml`
 
 ### Test Coverage
 

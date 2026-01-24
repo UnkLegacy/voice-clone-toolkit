@@ -4,7 +4,7 @@ Quick start guide for installing Qwen3-TTS Voice Clone Scripts.
 
 ## Prerequisites
 
-- **Python**: 3.8 or higher
+- **Python**: 3.10 or higher (required by PyTorch)
 - **Operating System**: Windows, Linux, or macOS
 - **GPU** (optional but recommended): NVIDIA GPU with CUDA support
 

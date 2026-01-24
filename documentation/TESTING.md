@@ -176,25 +176,51 @@ coverage html
 
 ## Continuous Integration
 
-Tests can be integrated into CI/CD pipelines:
+This project includes automated testing via GitHub Actions!
 
-### GitHub Actions Example
+### GitHub Actions Workflow
+
+The repository is configured with a GitHub Actions workflow (`.github/workflows/tests.yml`) that automatically runs all unit tests on every push.
+
+**Features:**
+- ✅ Runs on every push to any branch
+- ✅ Tests against multiple Python versions (3.10, 3.11, 3.12)
+- ✅ Automatically installs all dependencies
+- ✅ Provides test results in the Actions tab
+
+**View test results:**
+- Check the **Actions** tab in the GitHub repository
+- Look for the [![Tests](https://github.com/UnkLegacy/Qwen3-TTS_Scripts/actions/workflows/tests.yml/badge.svg)](https://github.com/UnkLegacy/Qwen3-TTS_Scripts/actions/workflows/tests.yml) badge in the README
+
+The workflow configuration is available at `.github/workflows/tests.yml`:
 
 ```yaml
-name: Tests
+name: Run Unit Tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "main", "master" ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-      - name: Run tests
-        run: python run_tests.py
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+    - name: Run unit tests
+      run: python run_tests.py
 ```
 
 ## Test Philosophy
