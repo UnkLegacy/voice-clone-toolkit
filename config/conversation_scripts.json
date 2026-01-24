@@ -28,6 +28,6 @@
   },
   "script_file_example": {
     "actors": ["DougDoug", "Example_Grandma"],
-    "script": "./scripts/example_script.txt"
+    "script": "./conversation_scripts/example_script.txt"
   }
 }

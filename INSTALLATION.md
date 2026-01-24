@@ -13,7 +13,7 @@ Quick start guide for installing Qwen3-TTS Voice Clone Scripts.
 ### 1. Clone or Download Repository
 
 ```bash
-git clone https://github.com/yourusername/Qwen3-TTS_Scripts.git
+git clone https://github.com/UnkLegacy/Qwen3-TTS_Scripts.git
 cd Qwen3-TTS_Scripts
 ```
 
@@ -91,7 +91,7 @@ pip install --pre torchaudio --index-url https://download.pytorch.org/whl/nightl
 | GTX 16xx | CUDA 11.8 | `pip install torch --index-url https://download.pytorch.org/whl/cu118` |
 | No GPU / CPU only | N/A | `pip install torch --index-url https://download.pytorch.org/whl/cpu` |
 
-📊 **For detailed GPU compatibility info, troubleshooting, and performance comparisons, see [GPU_COMPATIBILITY.md](GPU_COMPATIBILITY.md)**.
+📊 **For detailed GPU compatibility info, troubleshooting, and performance comparisons, see [GPU_COMPATIBILITY.md](documentation/GPU_COMPATIBILITY.md)**.
 
 ### CPU Only (Smaller Download)
 
@@ -116,7 +116,12 @@ This includes:
 
 ## Download Models
 
-Download the Qwen3-TTS models from Hugging Face:
+Download the Qwen3-TTS models from Hugging Face or ModelScope.
+
+**📋 See all available models and descriptions:**  
+Visit the [Released Models section](https://github.com/QwenLM/Qwen3-TTS?tab=readme-ov-file#released-models-description-and-download) in the official [Qwen3-TTS repository](https://github.com/QwenLM/Qwen3-TTS).
+
+### Quick Download (Hugging Face)
 
 ```bash
 # Create models directory
@@ -162,7 +167,7 @@ Run a simple test:
 python run_tests.py
 
 # Or try listing voice profiles
-python Clone_Voice.py --list-voices
+python src/clone_voice.py --list-voices
 ```
 
 ## Troubleshooting
@@ -217,7 +222,7 @@ Make sure you're running from the project root directory:
 
 ```bash
 cd /path/to/Qwen3-TTS_Scripts
-python Clone_Voice.py --help
+python src/clone_voice.py --help
 ```
 
 ## Platform-Specific Notes
@@ -285,7 +290,7 @@ rm -rf output
 
 ## Getting Help
 
-- **Documentation**: Check `README.md`, `TESTING.md`, `CONVERSATION_GUIDE.md`
+- **Documentation**: Check `README.md`, `documentation/TESTING.md`, `documentation/CONVERSATION_GUIDE.md`
 - **Issues**: Check if models are downloaded correctly
 - **Tests**: Run `python run_tests.py` to verify setup
 

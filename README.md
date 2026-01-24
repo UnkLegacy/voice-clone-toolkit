@@ -2,13 +2,22 @@
 
 A collection of Python scripts for voice cloning and text-to-speech generation using the Qwen3-TTS models.
 
+## 🔗 Based On
+
+This project is based on [**Qwen3-TTS**](https://github.com/QwenLM/Qwen3-TTS) by Alibaba Cloud's Qwen team - an open-source series of TTS models supporting stable, expressive, and streaming speech generation, free-form voice design, and vivid voice cloning.
+
+**Download Qwen3-TTS Models:**  
+See the [Released Models section](https://github.com/QwenLM/Qwen3-TTS?tab=readme-ov-file#released-models-description-and-download) in the official Qwen3-TTS repository for model downloads and descriptions.
+
 ## 📜 Available Scripts
 
-- **Clone_Voice.py** - Clone voices and generate speech with single or multiple voice profiles
-- **Clone_Voice_Conversation.py** - Generate conversations between multiple cloned voices with script support
-- **Voice_Design.py** - Design custom voices using natural language descriptions
-- **Voice_Design_Clone.py** - Combine voice design with cloning for consistent character voices
-- **Custom_Voice.py** - Generate speech with custom voice models
+All scripts are located in the `src/` directory:
+
+- **src/clone_voice.py** - Clone voices and generate speech with single or multiple voice profiles
+- **src/clone_voice_conversation.py** - Generate conversations between multiple cloned voices with script support
+- **src/voice_design.py** - Design custom voices using natural language descriptions
+- **src/voice_design_clone.py** - Combine voice design with cloning for consistent character voices
+- **src/custom_voice.py** - Generate speech with custom voice models
 
 ## 📋 Table of Contents
 
@@ -21,6 +30,13 @@ A collection of Python scripts for voice cloning and text-to-speech generation u
 - [Voice Profile Structure](#voice-profile-structure)
 - [Examples](#examples)
 - [Troubleshooting](#troubleshooting)
+
+## 📚 Documentation
+
+- **[Conversation Guide](documentation/CONVERSATION_GUIDE.md)** - Complete guide for creating multi-actor conversations
+- **[GPU Compatibility](documentation/GPU_COMPATIBILITY.md)** - PyTorch and CUDA installation for different GPU generations
+- **[Project Structure](documentation/PROJECT_STRUCTURE.md)** - Detailed project directory structure and organization
+- **[Testing Guide](documentation/TESTING.md)** - How to run and write unit tests
 
 ## ✨ Features
 
@@ -38,7 +54,7 @@ A collection of Python scripts for voice cloning and text-to-speech generation u
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/Qwen3-TTS_Scripts.git
+git clone https://github.com/UnkLegacy/Qwen3-TTS_Scripts.git
 cd Qwen3-TTS_Scripts
 
 # Create virtual environment (recommended)
@@ -103,7 +119,7 @@ pip install torch --index-url https://download.pytorch.org/whl/cpu
 
 **Note**: RTX 50xx series cards require nightly PyTorch builds with CUDA 12.8 support.
 
-📊 **GPU Compatibility**: For detailed GPU-specific installation instructions, see **[GPU_COMPATIBILITY.md](GPU_COMPATIBILITY.md)**.
+📊 **GPU Compatibility**: For detailed GPU-specific installation instructions, see **[GPU_COMPATIBILITY.md](documentation/GPU_COMPATIBILITY.md)**.
 
 ### Windows-specific Audio Playback
 
@@ -145,13 +161,13 @@ coverage report
 coverage html  # Generate HTML report
 ```
 
-For detailed testing information, see [TESTING.md](TESTING.md).
+For detailed testing information, see [TESTING.md](documentation/TESTING.md).
 
 ## ⚙️ Configuration
 
 ### Quick Toggle Settings
 
-Edit the top of `Clone_Voice.py` to quickly change default behavior:
+Edit the top of `clone_voice.py` to quickly change default behavior:
 
 ```python
 # Default settings (can be overridden by command-line arguments)
@@ -248,7 +264,7 @@ Voice profiles are stored in `config/voice_clone_profiles.json`. This file conta
 ```
 
 3. Place your reference audio file in the `input/` directory
-4. Update `DEFAULT_VOICE` in `Clone_Voice.py` or use `--voice MyVoice` flag
+4. Update `DEFAULT_VOICE` in `clone_voice.py` or use `--voice MyVoice` flag
 
 #### Using Text Files for Longer Content
 
@@ -301,29 +317,29 @@ No need to escape quotes or worry about JSON formatting!
 Run with default settings (as configured in the script):
 
 ```bash
-python Clone_Voice.py
+python src/clone_voice.py
 ```
 
 ### Using a Specific Voice Profile
 
 ```bash
-python Clone_Voice.py --voice DougDoug
+python src/clone_voice.py --voice DougDoug
 ```
 
 ### Using Multiple Voice Profiles
 
 ```bash
 # Process multiple voices in one run
-python Clone_Voice.py --voices DougDoug Grandma
+python clone_voice.py --voices DougDoug Grandma
 
 # Process all three example profiles
-python Clone_Voice.py --voices DougDoug Grandma Example_Grandma
+python clone_voice.py --voices DougDoug Grandma Example_Grandma
 ```
 
 ### List Available Voice Profiles
 
 ```bash
-python Clone_Voice.py --list-voices
+python src/clone_voice.py --list-voices
 ```
 
 This will display all configured voice profiles with their details.
@@ -395,47 +411,47 @@ Each voice profile in `config/voice_clone_profiles.json` contains:
 
 ```bash
 # Uses the DEFAULT_VOICE setting from the script
-python Clone_Voice.py --only-single --no-play
+python clone_voice.py --only-single --no-play
 ```
 
 ### Example 1b: Process Multiple Default Voices
 
 ```python
-# In Clone_Voice.py, set:
+# In clone_voice.py, set:
 DEFAULT_VOICE = ["DougDoug", "Grandma"]
 ```
 
 ```bash
 # Then run without arguments to process all default voices
-python Clone_Voice.py
+python clone_voice.py
 ```
 
 ### Example 2: Generate Multiple Samples
 
 ```bash
 # Generate only batch outputs with DougDoug voice
-python Clone_Voice.py --voice DougDoug --only-batch
+python clone_voice.py --voice DougDoug --only-batch
 ```
 
 ### Example 3: Silent Batch Processing
 
 ```bash
 # Generate all outputs without playback (good for batch processing)
-python Clone_Voice.py --voice Grandma --no-play
+python clone_voice.py --voice Grandma --no-play
 ```
 
 ### Example 4: Full Pipeline
 
 ```bash
 # Run both single and batch with playback
-python Clone_Voice.py --voice DougDoug
+python clone_voice.py --voice DougDoug
 ```
 
 ### Example 5: Explore Available Voices
 
 ```bash
 # List all configured voice profiles
-python Clone_Voice.py --list-voices
+python clone_voice.py --list-voices
 ```
 
 Output:
@@ -462,7 +478,7 @@ Grandma:
 
 ```bash
 # Generate the same text as the reference audio to compare quality
-python Clone_Voice.py --voice DougDoug --compare --only-single
+python clone_voice.py --voice DougDoug --compare --only-single
 ```
 
 This is useful for:
@@ -479,14 +495,14 @@ In compare mode, the script will:
 
 ```bash
 # Generate outputs for multiple voice profiles in one run
-python Clone_Voice.py --voices DougDoug Grandma
+python clone_voice.py --voices DougDoug Grandma
 
 # Process multiple voices with specific settings
-python Clone_Voice.py --voices DougDoug Grandma Example_Grandma --only-single --no-play
+python clone_voice.py --voices DougDoug Grandma Example_Grandma --only-single --no-play
 
 # Or set multiple voices as default in the config
-# In Clone_Voice.py: DEFAULT_VOICE = ["DougDoug", "Grandma"]
-python Clone_Voice.py
+# In clone_voice.py: DEFAULT_VOICE = ["DougDoug", "Grandma"]
+python clone_voice.py
 ```
 
 **Benefits:**
@@ -557,10 +573,10 @@ When processing multiple voices with `--voices`, each voice creates its own subd
 **Solution**: 
 ```bash
 # Check available profiles
-python Clone_Voice.py --list-voices
+python clone_voice.py --list-voices
 
 # Use an existing profile
-python Clone_Voice.py --voice DougDoug
+python clone_voice.py --voice DougDoug
 ```
 
 #### "Reference audio not found"
@@ -582,7 +598,7 @@ python Clone_Voice.py --voice DougDoug
 pip install pygame
 
 # Or run without playback
-python Clone_Voice.py --no-play
+python clone_voice.py --no-play
 ```
 
 #### "CUDA out of memory"
@@ -644,7 +660,7 @@ For issues related to:
 - **Script functionality**: Open an issue in this repository
 - **Qwen3-TTS model**: Visit the [official Qwen3-TTS repository](https://github.com/QwenLM/Qwen3-TTS)
 
-## 🎭 Conversation Scripts (Clone_Voice_Conversation.py)
+## 🎭 Conversation Scripts (clone_voice_conversation.py)
 
 ### Overview
 
@@ -658,19 +674,19 @@ Generate realistic conversations between multiple cloned voices using script fil
 
 ```bash
 # Run with default conversation
-python Clone_Voice_Conversation.py
+python src/clone_voice_conversation.py
 
 # Use a specific script
-python Clone_Voice_Conversation.py --script tech_discussion
+python src/clone_voice_conversation.py --script tech_discussion
 
 # List available scripts
-python Clone_Voice_Conversation.py --list-scripts
+python src/clone_voice_conversation.py --list-scripts
 
 # Generate without playback
-python Clone_Voice_Conversation.py --no-play
+python src/clone_voice_conversation.py --no-play
 
 # Keep lines separate (no concatenation)
-python Clone_Voice_Conversation.py --no-concatenate
+python src/clone_voice_conversation.py --no-concatenate
 ```
 
 ### Configuration
@@ -703,7 +719,7 @@ Conversation scripts are defined in `config/conversation_scripts.json`:
 
 **File-based script:**
 ```json
-"script": "./scripts/my_conversation.txt"
+"script": "./conversation_scripts/my_conversation.txt"
 ```
 
 **Script file format (`.txt`):**
@@ -757,7 +773,7 @@ The project includes several example conversations:
 
 2. **Create script file** (optional):
    ```
-   // In scripts/my_script.txt
+   // In conversation_scripts/my_script.txt
    [MyActor] Hello, this is my first line!
    [OtherActor] And this is my response!
    ```
@@ -775,7 +791,7 @@ The project includes several example conversations:
 
 4. **Generate**:
    ```bash
-   python Clone_Voice_Conversation.py --script my_custom_script
+   python src/clone_voice_conversation.py --script my_custom_script
    ```
 
 ### Tips for Best Results

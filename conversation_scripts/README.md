@@ -45,7 +45,7 @@ Actor names must match voice profiles defined in `config/voice_clone_profiles.js
 {
   "my_conversation": {
     "actors": ["DougDoug", "Grandma"],
-    "script": "./scripts/my_conversation.txt"
+    "script": "./conversation_scripts/my_conversation.txt"
   }
 }
 ```
@@ -53,7 +53,7 @@ Actor names must match voice profiles defined in `config/voice_clone_profiles.js
 3. **Run the conversation generator:**
 
 ```bash
-python Clone_Voice_Conversation.py --script my_conversation
+python src/clone_voice_conversation.py --script my_conversation
 ```
 
 ## Tips

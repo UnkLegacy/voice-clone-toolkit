@@ -28,7 +28,7 @@ The Conversation Script Generator combines voice cloning with dialogue generatio
 
 ```bash
 # Run the example conversation
-python Clone_Voice_Conversation.py
+python src/clone_voice_conversation.py
 ```
 
 This will generate a conversation using the default `example_conversation` script.
@@ -36,7 +36,7 @@ This will generate a conversation using the default `example_conversation` scrip
 ### 2. List Available Scripts
 
 ```bash
-python Clone_Voice_Conversation.py --list-scripts
+python src/clone_voice_conversation.py --list-scripts
 ```
 
 Output:
@@ -62,7 +62,7 @@ script_file_example:
 ### 3. Run a Specific Script
 
 ```bash
-python Clone_Voice_Conversation.py --script tech_discussion
+python src/clone_voice_conversation.py --script tech_discussion
 ```
 
 ## Configuration
@@ -133,7 +133,7 @@ Store scripts in separate `.txt` files:
 {
   "podcast_episode": {
     "actors": ["Host", "Guest"],
-    "script": "./scripts/podcast_episode_1.txt"
+    "script": "./conversation_scripts/podcast_episode_1.txt"
   }
 }
 ```
@@ -184,7 +184,7 @@ This line has no actor - will be skipped
 
 ```bash
 # Generate the default conversation
-python Clone_Voice_Conversation.py
+python src/clone_voice_conversation.py
 ```
 
 Output files:
@@ -200,7 +200,7 @@ output/Conversations/example_conversation/
 
 ```bash
 # Generate without playing audio
-python Clone_Voice_Conversation.py --script tech_discussion --no-play
+python src/clone_voice_conversation.py --script tech_discussion --no-play
 ```
 
 Useful for:
@@ -212,7 +212,7 @@ Useful for:
 
 ```bash
 # Generate without concatenating
-python Clone_Voice_Conversation.py --no-concatenate
+python src/clone_voice_conversation.py --no-concatenate
 ```
 
 This creates individual line files but skips creating the `_full.wav` file.
@@ -257,7 +257,7 @@ Useful for:
 {
   "my_story": {
     "actors": ["Narrator", "DougDoug", "Example_Grandma"],
-    "script": "./scripts/my_story.txt"
+    "script": "./conversation_scripts/my_story.txt"
   }
 }
 ```
@@ -265,7 +265,7 @@ Useful for:
 **Step 4:** Generate
 
 ```bash
-python Clone_Voice_Conversation.py --script my_story
+python src/clone_voice_conversation.py --script my_story
 ```
 
 ## Advanced Features
@@ -319,7 +319,7 @@ You can mix inline and file-based scripts in the same config:
   },
   "long_story": {
     "actors": ["Narrator"],
-    "script": "./scripts/long_story.txt"
+    "script": "./conversation_scripts/long_story.txt"
   }
 }
 ```
@@ -445,7 +445,7 @@ This shouldn't happen - the script processes lines sequentially. If it does:
    {
      "my_conversation": {
        "actors": ["DougDoug", "Example_Grandma"],
-       "script": "./scripts/my_conversation.txt"
+       "script": "./conversation_scripts/my_conversation.txt"
      }
    }
    ```
@@ -453,7 +453,7 @@ This shouldn't happen - the script processes lines sequentially. If it does:
 4. **Test generation:**
    ```bash
    # Generate and listen
-   python Clone_Voice_Conversation.py --script my_conversation
+   python src/clone_voice_conversation.py --script my_conversation
    ```
 
 5. **Iterate:**

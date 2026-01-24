@@ -8,16 +8,22 @@ Complete directory structure and file organization for the Qwen3-TTS Scripts pro
 Qwen3-TTS_Scripts/
 ├── .gitignore                    # Git ignore rules
 ├── README.md                     # Main project documentation
-├── TESTING.md                    # Testing guide
-├── CONVERSATION_GUIDE.md         # Conversation script guide
-├── PROJECT_STRUCTURE.md          # This file
+├── INSTALLATION.md               # Installation guide
 ├── run_tests.py                  # Test runner script
 │
-├── Clone_Voice.py                # Main voice cloning script
-├── Clone_Voice_Conversation.py   # Conversation generation script
-├── Custom_Voice.py               # Custom voice generation
-├── Voice_Design.py               # Voice design script
-├── Voice_Design_Clone.py         # Combined voice design + clone
+├── documentation/                # Documentation files
+│   ├── CONVERSATION_GUIDE.md          # Conversation script guide
+│   ├── GPU_COMPATIBILITY.md           # GPU compatibility guide
+│   ├── PROJECT_STRUCTURE.md           # This file
+│   └── TESTING.md                     # Testing guide
+│
+├── src/                          # Source code directory
+│   ├── __init__.py                    # Package initialization
+│   ├── clone_voice.py                 # Main voice cloning script
+│   ├── clone_voice_conversation.py    # Conversation generation script
+│   ├── custom_voice.py                # Custom voice generation
+│   ├── voice_design.py                # Voice design script
+│   └── voice_design_clone.py          # Combined voice design + clone
 │
 ├── config/                       # Configuration files
 │   ├── voice_clone_profiles.json      # Voice profile definitions
@@ -34,7 +40,7 @@ Qwen3-TTS_Scripts/
 │   ├── example_batch_1.txt            # Example batch text
 │   └── dougdoug_transcript.txt        # DougDoug transcript
 │
-├── scripts/                      # Conversation script files
+├── conversation_scripts/         # Conversation script files
 │   ├── README.md                      # Scripts directory guide
 │   └── example_script.txt             # Example conversation
 │
@@ -69,16 +75,23 @@ Qwen3-TTS_Scripts/
 
 ## Directory Descriptions
 
+### Source Code (`src/`)
+
+Main Python scripts located in `src/` directory:
+
+| File | Purpose |
+|------|---------|
+| `src/clone_voice.py` | Main voice cloning with single/batch generation |
+| `src/clone_voice_conversation.py` | Multi-actor conversation generation |
+| `src/custom_voice.py` | Custom voice model generation |
+| `src/voice_design.py` | Design voices with natural language |
+| `src/voice_design_clone.py` | Combine voice design with cloning |
+
 ### Root Scripts
 
 | File | Purpose |
 |------|---------|
-| `Clone_Voice.py` | Main voice cloning with single/batch generation |
-| `Clone_Voice_Conversation.py` | Multi-actor conversation generation |
-| `Custom_Voice.py` | Custom voice model generation |
-| `Voice_Design.py` | Design voices with natural language |
-| `Voice_Design_Clone.py` | Combine voice design with cloning |
-| `run_tests.py` | Convenient test runner |
+| `run_tests.py` | Test runner for all unit tests |
 
 ### Configuration (`config/`)
 
@@ -103,7 +116,7 @@ Text content files that can be referenced in configs:
 - `single_text`: Single generation text
 - `batch_texts`: Batch generation texts
 
-### Scripts (`scripts/`)
+### Conversation Scripts (`conversation_scripts/`)
 
 Conversation script files:
 
@@ -211,13 +224,15 @@ The following are **not committed** to git:
 
 | File | Purpose |
 |------|---------|
-| `README.md` | Main project documentation |
-| `TESTING.md` | Testing guide and best practices |
-| `CONVERSATION_GUIDE.md` | Detailed conversation script guide |
-| `PROJECT_STRUCTURE.md` | This file - project organization |
+| `README.md` | Main project documentation (root) |
+| `INSTALLATION.md` | Installation guide (root) |
+| `documentation/CONVERSATION_GUIDE.md` | Detailed conversation script guide |
+| `documentation/GPU_COMPATIBILITY.md` | GPU compatibility and PyTorch installation |
+| `documentation/PROJECT_STRUCTURE.md` | This file - project organization |
+| `documentation/TESTING.md` | Testing guide and best practices |
 | `input/README.md` | Input directory guide |
 | `texts/README.md` | Text files guide |
-| `scripts/README.md` | Conversation scripts guide |
+| `conversation_scripts/README.md` | Conversation scripts guide |
 | `tests/README.md` | Testing documentation |
 
 ## Future Expansion

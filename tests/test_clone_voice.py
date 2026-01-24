@@ -15,7 +15,7 @@ import numpy as np
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from Clone_Voice import (
+from src.clone_voice import (
     load_voice_profiles,
     load_text_from_file_or_string,
     ensure_output_dir,
