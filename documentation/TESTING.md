@@ -16,7 +16,7 @@ python -m unittest discover tests -v
 
 The project includes comprehensive unit tests for:
 
-### Clone_Voice.py
+### clone_voice.py
 - ✅ Voice profile loading from JSON
 - ✅ Text loading from files or inline
 - ✅ Directory creation and management
@@ -24,7 +24,7 @@ The project includes comprehensive unit tests for:
 - ✅ Command-line argument parsing
 - ✅ Voice profile listing
 
-### Clone_Voice_Conversation.py
+### clone_voice_conversation.py
 - ✅ JSON configuration loading
 - ✅ Script format parsing (`[Actor] dialogue`)
 - ✅ Script list parsing
@@ -32,14 +32,38 @@ The project includes comprehensive unit tests for:
 - ✅ Command-line argument parsing
 - ✅ Script listing functionality
 
+### custom_voice.py
+- ✅ Custom voice profile loading from JSON
+- ✅ Speaker profile listing
+- ✅ Directory creation and management
+- ✅ WAV file saving with different formats
+- ✅ Command-line argument parsing
+
+### voice_design.py
+- ✅ Voice design profile loading from JSON
+- ✅ Design profile listing
+- ✅ Directory creation and management
+- ✅ WAV file saving with different formats
+- ✅ Command-line argument parsing
+
+### voice_design_clone.py
+- ✅ Voice design + clone profile loading from JSON
+- ✅ Design clone profile listing
+- ✅ Directory creation and management
+- ✅ WAV file saving with different formats
+- ✅ Command-line argument parsing
+
 ## Running Specific Tests
 
 ```bash
 # Run tests for a specific module
 python -m unittest tests.test_clone_voice
+python -m unittest tests.test_custom_voice
+python -m unittest tests.test_voice_design
 
 # Run a specific test class
 python -m unittest tests.test_clone_voice.TestLoadVoiceProfiles
+python -m unittest tests.test_custom_voice.TestLoadCustomVoiceProfiles
 
 # Run a specific test method
 python -m unittest tests.test_clone_voice.TestLoadVoiceProfiles.test_load_valid_profiles
@@ -51,8 +75,11 @@ python -m unittest tests.test_clone_voice.TestLoadVoiceProfiles.test_load_valid_
 tests/
 ├── __init__.py                           # Package initialization
 ├── README.md                             # Testing documentation
-├── test_clone_voice.py                   # Tests for Clone_Voice.py
-└── test_clone_voice_conversation.py      # Tests for Clone_Voice_Conversation.py
+├── test_clone_voice.py                   # Tests for src/clone_voice.py
+├── test_clone_voice_conversation.py      # Tests for src/clone_voice_conversation.py
+├── test_custom_voice.py                  # Tests for src/custom_voice.py
+├── test_voice_design.py                  # Tests for src/voice_design.py
+└── test_voice_design_clone.py            # Tests for src/voice_design_clone.py
 ```
 
 ## Writing New Tests

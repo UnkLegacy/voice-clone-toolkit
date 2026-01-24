@@ -29,5 +29,18 @@
   "script_file_example": {
     "actors": ["DougDoug", "Example_Grandma"],
     "script": "./conversation_scripts/example_script.txt"
+  },
+  "mixed_profile_types": {
+    "actors": ["DougDoug", "Sohee", "Incredulous_Panic", "Confident_Professional"],
+    "script": [
+      "[DougDoug] Hey everyone! Today we have some special guests joining us!",
+      "[Sohee] 안녕하세요! I'm so happy to be here today!",
+      "[DougDoug] And we've got someone who seems a bit worried...",
+      "[Incredulous_Panic] Wait, what? You mean I'm supposed to talk right now? This is... this is happening?",
+      "[Confident_Professional] Don't worry, you're doing great. Let's take it one step at a time.",
+      "[Sohee] Yes, we're all here to support each other!",
+      "[DougDoug] See? This is what I love about this community. Everyone helping everyone!",
+      "[Incredulous_Panic] Okay... okay, I think I can do this. Thanks everyone!"
+    ]
   }
 }

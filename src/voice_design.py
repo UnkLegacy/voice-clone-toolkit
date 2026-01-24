@@ -16,7 +16,9 @@ import torch
 import numpy as np
 import wave
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any
+import argparse
+import json
 
 try:
     from tqdm import tqdm
@@ -46,6 +48,75 @@ except ImportError:
         playsound = None
 
 from qwen_tts import Qwen3TTSModel
+
+
+# =============================================================================
+# CONFIGURATION SECTION - Edit these to easily switch between different voice designs
+# =============================================================================
+
+# Path to voice design profiles configuration file
+VOICE_DESIGN_PROFILES_CONFIG = "config/voice_design_profiles.json"
+
+# Default settings (can be overridden by command-line arguments)
+DEFAULT_PROFILE = "Professional_Narrator"  # Change this to switch between profiles
+RUN_SINGLE = True                           # Set to False to skip single generation
+RUN_BATCH = True                            # Set to False to skip batch generation
+PLAY_AUDIO = True                           # Set to False to skip audio playback
+
+# =============================================================================
+# END CONFIGURATION SECTION
+# =============================================================================
+
+
+def load_voice_design_profiles(config_path: str = VOICE_DESIGN_PROFILES_CONFIG) -> Dict[str, Any]:
+    """
+    Load voice design profiles from JSON configuration file.
+    
+    Args:
+        config_path: Path to the JSON configuration file
+        
+    Returns:
+        Dictionary of voice design profiles
+    """
+    if not os.path.exists(config_path):
+        print_progress(f"Error: Voice design profiles config not found: {config_path}")
+        print_progress("Creating default config file...")
+        
+        # Create default config
+        default_profiles = {
+            "Example": {
+                "language": "English",
+                "description": "Example voice design profile",
+                "single_text": "This is an example of voice design.",
+                "single_instruct": "Speak in a clear, neutral tone.",
+                "batch_texts": [
+                    "This is the first example.",
+                    "This is the second example."
+                ],
+                "batch_languages": ["English", "English"],
+                "batch_instructs": ["", "Happy tone"]
+            }
+        }
+        
+        # Ensure config directory exists
+        Path(config_path).parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(config_path, 'w', encoding='utf-8') as f:
+            json.dump(default_profiles, f, indent=2, ensure_ascii=False)
+        
+        print_progress(f"Created default config at: {config_path}")
+        print_progress("Please edit this file to add your voice design profiles.")
+        return default_profiles
+    
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        print_progress(f"Error parsing JSON config: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print_progress(f"Error loading voice design profiles: {e}")
+        sys.exit(1)
 
 
 def print_progress(message: str):
@@ -262,49 +333,187 @@ def play_audio(filepath: str):
         print_progress(f"Audio file saved at: {os.path.abspath(filepath)}")
 
 
+def parse_args(voice_profiles: Dict[str, Any]):
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Qwen3-TTS Voice Design Generation Script",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=f"""
+Available voice design profiles: {', '.join(voice_profiles.keys())}
+
+Examples:
+  python src/voice_design.py                              # Use default settings from config
+  python src/voice_design.py --profile Incredulous_Panic  # Use specific profile
+  python src/voice_design.py --no-batch                   # Skip batch generation
+  python src/voice_design.py --only-single                # Only run single generation
+  python src/voice_design.py --list-profiles              # List available profiles
+        """
+    )
+    
+    parser.add_argument(
+        "--profile", "-p",
+        type=str,
+        default=None,
+        choices=list(voice_profiles.keys()),
+        help=f"Voice design profile to use (default: {DEFAULT_PROFILE})"
+    )
+    
+    parser.add_argument(
+        "--no-single",
+        action="store_true",
+        help="Skip single voice generation"
+    )
+    
+    parser.add_argument(
+        "--no-batch",
+        action="store_true",
+        help="Skip batch voice generation"
+    )
+    
+    parser.add_argument(
+        "--only-single",
+        action="store_true",
+        help="Only run single generation (skip batch)"
+    )
+    
+    parser.add_argument(
+        "--only-batch",
+        action="store_true",
+        help="Only run batch generation (skip single)"
+    )
+    
+    parser.add_argument(
+        "--no-play",
+        action="store_true",
+        help="Skip audio playback"
+    )
+    
+    parser.add_argument(
+        "--list-profiles",
+        action="store_true",
+        help="List available voice design profiles and exit"
+    )
+    
+    return parser.parse_args()
+
+
+def list_design_profiles(voice_profiles: Dict[str, Any]):
+    """List all available voice design profiles."""
+    print("\n" + "="*60)
+    print("AVAILABLE VOICE DESIGN PROFILES")
+    print("="*60)
+    for name, profile in voice_profiles.items():
+        print(f"\n{name}:")
+        print(f"  Language: {profile['language']}")
+        print(f"  Description: {profile.get('description', 'N/A')}")
+        
+        # Safely display text fields
+        single_text = profile['single_text']
+        single_instruct = profile['single_instruct']
+        display_text = single_text[:60] if len(single_text) <= 60 else single_text[:60] + "..."
+        display_instruct = single_instruct[:60] if len(single_instruct) <= 60 else single_instruct[:60] + "..."
+        
+        try:
+            print(f"  Single text: {display_text}")
+            print(f"  Single instruct: {display_instruct}")
+        except UnicodeEncodeError:
+            print(f"  Single text: [contains non-ASCII characters]")
+            print(f"  Single instruct: [contains non-ASCII characters]")
+        
+        print(f"  Batch texts: {len(profile.get('batch_texts', []))} samples")
+    print("="*60 + "\n")
+
+
 def main():
     """Main function to run the Voice Design TTS generation pipeline."""
+    # Load voice design profiles from JSON config
+    voice_profiles = load_voice_design_profiles()
+    
+    # Parse command-line arguments
+    args = parse_args(voice_profiles)
+    
+    # Handle --list-profiles
+    if args.list_profiles:
+        list_design_profiles(voice_profiles)
+        return
+    
+    # Determine what to run
+    run_single = RUN_SINGLE and not args.no_single and not args.only_batch
+    run_batch = RUN_BATCH and not args.no_batch and not args.only_single
+    play_audio_enabled = PLAY_AUDIO and not args.no_play
+    
+    # Determine which profile to use
+    profile_name = args.profile if args.profile else DEFAULT_PROFILE
+    
+    if profile_name not in voice_profiles:
+        print_progress(f"Error: Voice design profile '{profile_name}' not found!")
+        print_progress(f"Available profiles: {', '.join(voice_profiles.keys())}")
+        sys.exit(1)
+    
+    profile = voice_profiles[profile_name]
     start_time = time.time()
     
     try:
+        print("\n" + "="*60)
+        print(f"VOICE DESIGN GENERATION: {profile_name}")
+        print("="*60)
+        print_progress(f"Language: {profile['language']}")
+        print_progress(f"Description: {profile.get('description', 'N/A')}")
+        print_progress(f"Running single: {run_single}")
+        print_progress(f"Running batch: {run_batch}")
+        print_progress(f"Audio playback: {play_audio_enabled}")
+        
         # Ensure output directory exists
         ensure_output_dir()
         
         # Load model
         model = load_model()
         
-        # Single inference
-        print("\n" + "="*60)
-        print("SINGLE VOICE GENERATION")
-        print("="*60)
-        wavs, sr = generate_single_voice(
-            model=model,
-            text="It's in the top drawer... wait, it's empty? No way, that's impossible! I'm sure I put it there!",
-            language="English",
-            instruct="Speak in an incredulous tone, but with a hint of panic beginning to creep into your voice.",
-            output_file="output/Voice_Design/output_voice_design.wav"
-        )
+        # Output paths
+        output_single = f"output/Voice_Design/{profile_name}_single.wav"
+        output_batch_prefix = f"output/Voice_Design/{profile_name}_batch"
         
-        # Play the generated audio
-        print("\n" + "="*60)
-        play_audio("output/Voice_Design/output_voice_design.wav")
+        # Single voice generation
+        if run_single:
+            print("\n" + "="*60)
+            print("SINGLE VOICE GENERATION")
+            print("="*60)
+            wavs, sr = generate_single_voice(
+                model=model,
+                text=profile['single_text'],
+                language=profile['language'],
+                instruct=profile['single_instruct'],
+                output_file=output_single
+            )
+            
+            # Play the generated audio
+            if play_audio_enabled:
+                print("\n" + "="*60)
+                play_audio(output_single)
         
-        # Batch inference
-        # print("\n" + "="*60)
-        # print("BATCH VOICE GENERATION")
-        # print("="*60)
-        # wavs, sr = generate_batch_voices(
-        #     model=model,
-        #     texts=[
-        #         "哥哥，你回来啦，人家等了你好久好久了，要抱抱！",
-        #         "It's in the top drawer... wait, it's empty? No way, that's impossible! I'm sure I put it there!"
-        #     ],
-        #     languages=["Chinese", "English"],
-        #     instructs=[
-        #         "体现撒娇稚嫩的萝莉女声，音调偏高且起伏明显，营造出黏人、做作又刻意卖萌的听觉效果。",
-        #         "Speak in an incredulous tone, but with a hint of panic beginning to creep into your voice."
-        #     ]
-        # )
+        # Batch voice generation
+        if run_batch:
+            batch_texts = profile.get('batch_texts', [])
+            if batch_texts:
+                print("\n" + "="*60)
+                print("BATCH VOICE GENERATION")
+                print("="*60)
+                
+                batch_languages = profile.get('batch_languages', [profile['language']] * len(batch_texts))
+                batch_instructs = profile.get('batch_instructs', [''] * len(batch_texts))
+                
+                wavs, sr = generate_batch_voices(
+                    model=model,
+                    texts=batch_texts,
+                    languages=batch_languages,
+                    instructs=batch_instructs,
+                    output_prefix=output_batch_prefix
+                )
+                
+                # Play the first batch output
+                if play_audio_enabled:
+                    print("\n" + "="*60)
+                    play_audio(f"{output_batch_prefix}_1.wav")
         
         total_duration = time.time() - start_time
         print("\n" + "="*60)

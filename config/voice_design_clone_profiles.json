@@ -1,0 +1,70 @@
+{
+  "Nervous_Teen": {
+    "description": "Nervous teenage male voice gaining confidence",
+    "reference": {
+      "text": "H-hey! You dropped your... uh... calculus notebook? I mean, I think it's yours? Maybe?",
+      "instruct": "Male, 17 years old, tenor range, gaining confidence - deeper breath support now, though vowels still tighten when nervous",
+      "language": "English"
+    },
+    "single_texts": [
+      "No problem! I actually... kinda finished those already? If you want to compare answers or something...",
+      "What? No! I mean yes but not like... I just think you're... your titration technique is really precise!"
+    ],
+    "batch_texts": [
+      "I mean, not that I was watching you or anything! I was just... adjacent to where you were working!",
+      "Sure! Yeah! That would be... I'd like that. A lot. Too much? No, just the right amount!"
+    ],
+    "language": "English"
+  },
+  "Confident_Professional": {
+    "description": "Confident professional female voice",
+    "reference": {
+      "text": "Good morning everyone. Today we'll be discussing the quarterly results and our strategic initiatives for the next fiscal year.",
+      "instruct": "Female, mid-30s, alto range, confident and professional with warm undertones. Clear articulation with measured pacing.",
+      "language": "English"
+    },
+    "single_texts": [
+      "Let's start with the key performance indicators and how they've evolved over the past quarter.",
+      "I'm pleased to announce that we've exceeded our targets in three out of four major categories."
+    ],
+    "batch_texts": [
+      "Moving forward, we'll be implementing a new customer engagement strategy.",
+      "Thank you all for your hard work and dedication. Together, we'll achieve great things."
+    ],
+    "language": "English"
+  },
+  "Excited_Child": {
+    "description": "Excited young child voice",
+    "reference": {
+      "text": "Mom! Mom! Look what I found! It's a really cool bug and it has like a million legs!",
+      "instruct": "Child, 8 years old, high-pitched and energetic, speaking rapidly with excitement. Lots of breath and enthusiasm.",
+      "language": "English"
+    },
+    "single_texts": [
+      "Can we keep it? Please please please! I promise I'll take care of it every single day!",
+      "And then we can build it a house with sticks and leaves and everything!"
+    ],
+    "batch_texts": [
+      "This is the best day ever! We should tell everyone about this!",
+      "Wait until my friends at school see this tomorrow! They're gonna be so amazed!"
+    ],
+    "language": "English"
+  },
+  "Gentle_Elderly": {
+    "description": "Gentle elderly voice with wisdom",
+    "reference": {
+      "text": "Come here, dear. Let me tell you a story about when I was your age, many years ago.",
+      "instruct": "Elderly person, 70s, gentle and warm voice with slight age-related tremor. Speaks slowly with wisdom and kindness.",
+      "language": "English"
+    },
+    "single_texts": [
+      "Life has taught me that patience and kindness are the greatest virtues one can possess.",
+      "Remember, my child, that every mistake is simply a lesson in disguise."
+    ],
+    "batch_texts": [
+      "The world may change rapidly, but the important things remain constant - love, family, and compassion.",
+      "I've seen many seasons come and go, and each one has brought its own special beauty."
+    ],
+    "language": "English"
+  }
+}

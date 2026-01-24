@@ -17,11 +17,20 @@ python -m unittest discover tests -v
 ### Run Specific Test File
 
 ```bash
-# Test Clone_Voice.py
+# Test clone_voice.py
 python -m unittest tests.test_clone_voice
 
-# Test Clone_Voice_Conversation.py
+# Test clone_voice_conversation.py
 python -m unittest tests.test_clone_voice_conversation
+
+# Test custom_voice.py
+python -m unittest tests.test_custom_voice
+
+# Test voice_design.py
+python -m unittest tests.test_voice_design
+
+# Test voice_design_clone.py
+python -m unittest tests.test_voice_design_clone
 ```
 
 ### Run Specific Test Class
@@ -57,18 +66,39 @@ coverage html
 
 ## Test Structure
 
-- `test_clone_voice.py` - Tests for Clone_Voice.py
+- `test_clone_voice.py` - Tests for src/clone_voice.py
   - Voice profile loading
   - Text file loading
   - Directory creation
   - WAV file saving
   - Command-line argument parsing
 
-- `test_clone_voice_conversation.py` - Tests for Clone_Voice_Conversation.py
+- `test_clone_voice_conversation.py` - Tests for src/clone_voice_conversation.py
   - JSON configuration loading
   - Script format parsing
   - Script list parsing
   - Audio file operations
+  - Command-line argument parsing
+
+- `test_custom_voice.py` - Tests for src/custom_voice.py
+  - Custom voice profile loading
+  - Speaker profile listing
+  - Directory creation
+  - WAV file saving
+  - Command-line argument parsing
+
+- `test_voice_design.py` - Tests for src/voice_design.py
+  - Voice design profile loading
+  - Profile listing
+  - Directory creation
+  - WAV file saving
+  - Command-line argument parsing
+
+- `test_voice_design_clone.py` - Tests for src/voice_design_clone.py
+  - Voice design + clone profile loading
+  - Profile listing
+  - Directory creation
+  - WAV file saving
   - Command-line argument parsing
 
 ## Adding New Tests

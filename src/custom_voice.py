@@ -4,18 +4,8 @@ Qwen3-TTS Custom Voice Generation Script
 This script demonstrates how to use the Qwen3-TTS CustomVoice model to generate
 speech with different speakers and languages.
 
-Available Speakers:
-    Speaker     | Voice Description                                   | Native Language
-    ------------|----------------------------------------------------|-------------------------
-    Vivian      | Bright, slightly edgy young female voice.          | Chinese
-    Serena      | Warm, gentle young female voice.                  | Chinese
-    Uncle_Fu    | Seasoned male voice with a low, mellow timbre.    | Chinese
-    Dylan       | Youthful Beijing male voice with clear, natural timbre. | Chinese (Beijing Dialect)
-    Eric        | Lively Chengdu male voice with slightly husky brightness. | Chinese (Sichuan Dialect)
-    Ryan        | Dynamic male voice with strong rhythmic drive.    | English
-    Aiden       | Sunny American male voice with clear midrange.   | English
-    Ono_Anna    | Playful Japanese female voice with light, nimble timbre. | Japanese
-    Sohee       | Warm Korean female voice with rich emotion.      | Korean
+Speaker profiles are configured in config/custom_voice_profiles.json
+Use --list-speakers to see all available speakers and their descriptions.
 """
 
 import time
@@ -25,7 +15,9 @@ import torch
 import numpy as np
 import wave
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any, Union
+import argparse
+import json
 
 try:
     from tqdm import tqdm
@@ -55,6 +47,76 @@ except ImportError:
         playsound = None
 
 from qwen_tts import Qwen3TTSModel
+
+
+# =============================================================================
+# CONFIGURATION SECTION - Edit these to easily switch between different speakers
+# =============================================================================
+
+# Path to custom voice profiles configuration file
+CUSTOM_VOICE_PROFILES_CONFIG = "config/custom_voice_profiles.json"
+
+# Default settings (can be overridden by command-line arguments)
+DEFAULT_SPEAKER = "Ryan"  # Change this to switch between speakers
+RUN_SINGLE = True          # Set to False to skip single generation
+RUN_BATCH = True           # Set to False to skip batch generation
+PLAY_AUDIO = True          # Set to False to skip audio playback
+
+# =============================================================================
+# END CONFIGURATION SECTION
+# =============================================================================
+
+
+def load_custom_voice_profiles(config_path: str = CUSTOM_VOICE_PROFILES_CONFIG) -> Dict[str, Any]:
+    """
+    Load custom voice profiles from JSON configuration file.
+    
+    Args:
+        config_path: Path to the JSON configuration file
+        
+    Returns:
+        Dictionary of custom voice profiles
+    """
+    if not os.path.exists(config_path):
+        print_progress(f"Error: Custom voice profiles config not found: {config_path}")
+        print_progress("Creating default config file...")
+        
+        # Create default config
+        default_profiles = {
+            "Ryan": {
+                "speaker": "Ryan",
+                "language": "English",
+                "description": "Dynamic male voice with strong rhythmic drive",
+                "single_text": "Hello everyone, this is a test of the custom voice system.",
+                "single_instruct": "",
+                "batch_texts": [
+                    "This is the first example.",
+                    "This is the second example."
+                ],
+                "batch_languages": ["English", "English"],
+                "batch_instructs": ["", "Happy"]
+            }
+        }
+        
+        # Ensure config directory exists
+        Path(config_path).parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(config_path, 'w', encoding='utf-8') as f:
+            json.dump(default_profiles, f, indent=2, ensure_ascii=False)
+        
+        print_progress(f"Created default config at: {config_path}")
+        print_progress("Please edit this file to add your custom voice profiles.")
+        return default_profiles
+    
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        print_progress(f"Error parsing JSON config: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print_progress(f"Error loading custom voice profiles: {e}")
+        sys.exit(1)
 
 
 def print_progress(message: str):
@@ -284,50 +346,185 @@ def play_audio(filepath: str):
         print_progress(f"Audio file saved at: {os.path.abspath(filepath)}")
 
 
+def parse_args(voice_profiles: Dict[str, Any]):
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Qwen3-TTS Custom Voice Generation Script",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=f"""
+Available voice profiles: {', '.join(voice_profiles.keys())}
+
+Examples:
+  python src/custom_voice.py                        # Use default settings from config
+  python src/custom_voice.py --speaker Ryan         # Use Ryan speaker profile
+  python src/custom_voice.py --no-batch             # Skip batch generation
+  python src/custom_voice.py --only-single          # Only run single generation
+  python src/custom_voice.py --list-speakers        # List available speaker profiles
+        """
+    )
+    
+    parser.add_argument(
+        "--speaker", "-s",
+        type=str,
+        default=None,
+        choices=list(voice_profiles.keys()),
+        help=f"Speaker profile to use (default: {DEFAULT_SPEAKER})"
+    )
+    
+    parser.add_argument(
+        "--no-single",
+        action="store_true",
+        help="Skip single voice generation"
+    )
+    
+    parser.add_argument(
+        "--no-batch",
+        action="store_true",
+        help="Skip batch voice generation"
+    )
+    
+    parser.add_argument(
+        "--only-single",
+        action="store_true",
+        help="Only run single generation (skip batch)"
+    )
+    
+    parser.add_argument(
+        "--only-batch",
+        action="store_true",
+        help="Only run batch generation (skip single)"
+    )
+    
+    parser.add_argument(
+        "--no-play",
+        action="store_true",
+        help="Skip audio playback"
+    )
+    
+    parser.add_argument(
+        "--list-speakers",
+        action="store_true",
+        help="List available speaker profiles and exit"
+    )
+    
+    return parser.parse_args()
+
+
+def list_speaker_profiles(voice_profiles: Dict[str, Any]):
+    """List all available speaker profiles."""
+    print("\n" + "="*60)
+    print("AVAILABLE SPEAKER PROFILES")
+    print("="*60)
+    for name, profile in voice_profiles.items():
+        print(f"\n{name}:")
+        print(f"  Speaker: {profile['speaker']}")
+        print(f"  Language: {profile['language']}")
+        print(f"  Description: {profile.get('description', 'N/A')}")
+        single_text = profile['single_text']
+        # Truncate safely for display
+        display_text = single_text[:60] if len(single_text) <= 60 else single_text[:60] + "..."
+        try:
+            print(f"  Single text: {display_text}")
+        except UnicodeEncodeError:
+            print(f"  Single text: [contains non-ASCII characters]")
+        print(f"  Batch texts: {len(profile.get('batch_texts', []))} samples")
+    print("="*60 + "\n")
+
+
 def main():
     """Main function to run the TTS generation pipeline."""
+    # Load custom voice profiles from JSON config
+    voice_profiles = load_custom_voice_profiles()
+    
+    # Parse command-line arguments
+    args = parse_args(voice_profiles)
+    
+    # Handle --list-speakers
+    if args.list_speakers:
+        list_speaker_profiles(voice_profiles)
+        return
+    
+    # Determine what to run
+    run_single = RUN_SINGLE and not args.no_single and not args.only_batch
+    run_batch = RUN_BATCH and not args.no_batch and not args.only_single
+    play_audio_enabled = PLAY_AUDIO and not args.no_play
+    
+    # Determine which speaker to use
+    speaker_name = args.speaker if args.speaker else DEFAULT_SPEAKER
+    
+    if speaker_name not in voice_profiles:
+        print_progress(f"Error: Speaker profile '{speaker_name}' not found!")
+        print_progress(f"Available profiles: {', '.join(voice_profiles.keys())}")
+        sys.exit(1)
+    
+    profile = voice_profiles[speaker_name]
     start_time = time.time()
     
     try:
+        print("\n" + "="*60)
+        print(f"CUSTOM VOICE GENERATION: {speaker_name}")
+        print("="*60)
+        print_progress(f"Speaker: {profile['speaker']}")
+        print_progress(f"Language: {profile['language']}")
+        print_progress(f"Description: {profile.get('description', 'N/A')}")
+        print_progress(f"Running single: {run_single}")
+        print_progress(f"Running batch: {run_batch}")
+        print_progress(f"Audio playback: {play_audio_enabled}")
+        
         # Ensure output directory exists
         ensure_output_dir()
         
         # Load model
         model = load_model()
         
-        # Single inference
-        print("\n" + "="*60)
-        print("SINGLE VOICE GENERATION")
-        print("="*60)
-        wavs, sr = generate_single_voice(
-            model=model,
-            text="Hello Jonathan, I want to gobble your cock.  Please shove it deep in my mouth and fuck me hard.",
-            language="English",
-            speaker="Sohee",
-            instruct="Speak in a deep, breathy, seductive tone",
-            output_file="output/Custom_Voice/output_custom_voice.wav"
-        )
+        # Output paths
+        output_single = f"output/Custom_Voice/{speaker_name}_single.wav"
+        output_batch_prefix = f"output/Custom_Voice/{speaker_name}_batch"
         
-        # Play the generated audio
-        print("\n" + "="*60)
-        play_audio("output/Custom_Voice/output_custom_voice.wav")
+        # Single voice generation
+        if run_single:
+            print("\n" + "="*60)
+            print("SINGLE VOICE GENERATION")
+            print("="*60)
+            wavs, sr = generate_single_voice(
+                model=model,
+                text=profile['single_text'],
+                language=profile['language'],
+                speaker=profile['speaker'],
+                instruct=profile.get('single_instruct', ''),
+                output_file=output_single
+            )
+            
+            # Play the generated audio
+            if play_audio_enabled:
+                print("\n" + "="*60)
+                play_audio(output_single)
         
-        # Batch inference
-        # print("\n" + "="*60)
-        # print("BATCH VOICE GENERATION")
-        # print("="*60)
-        # wavs, sr = generate_batch_voices(
-        #     model=model,
-        #     texts=[
-        #         "She sells seashells by the seashore. She sells seashells by the seashore. She sells seashells by the seashore. She sells seashells by the seashore. She sells seashells by the seashore.",
-        #         "Peter Piper picked a peck of pickled peppers",
-        #         "Fischers Fritze fischt frische Fische, frische Fische fischt Fischers Fritze.",
-        #         "Blaukraut bleibt Blaukraut und Brautkleid bleibt Brautkleid."
-        #     ],
-        #     languages=["English", "English", "German", "German"],
-        #     speakers=["Ryan", "Aiden", "Uncle_fu", "Sohee"],
-        #     instructs=["", "Very happy.", "Serious.", "Silly."]
-        # )
+        # Batch voice generation
+        if run_batch:
+            batch_texts = profile.get('batch_texts', [])
+            if batch_texts:
+                print("\n" + "="*60)
+                print("BATCH VOICE GENERATION")
+                print("="*60)
+                
+                batch_languages = profile.get('batch_languages', [profile['language']] * len(batch_texts))
+                batch_instructs = profile.get('batch_instructs', [''] * len(batch_texts))
+                batch_speakers = [profile['speaker']] * len(batch_texts)
+                
+                wavs, sr = generate_batch_voices(
+                    model=model,
+                    texts=batch_texts,
+                    languages=batch_languages,
+                    speakers=batch_speakers,
+                    instructs=batch_instructs,
+                    output_prefix=output_batch_prefix
+                )
+                
+                # Play the first batch output
+                if play_audio_enabled:
+                    print("\n" + "="*60)
+                    play_audio(f"{output_batch_prefix}_1.wav")
         
         total_duration = time.time() - start_time
         print("\n" + "="*60)

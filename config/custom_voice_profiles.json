@@ -1,0 +1,122 @@
+{
+  "Vivian": {
+    "speaker": "Vivian",
+    "language": "Chinese",
+    "description": "Bright, slightly edgy young female voice",
+    "single_text": "你好，我是Vivian，很高兴认识你。",
+    "single_instruct": "",
+    "batch_texts": [
+      "今天天气真不错。",
+      "你吃饭了吗？",
+      "我们一起去玩吧！"
+    ],
+    "batch_languages": ["Chinese", "Chinese", "Chinese"],
+    "batch_instructs": ["", "Happy", "Excited"]
+  },
+  "Serena": {
+    "speaker": "Serena",
+    "language": "Chinese",
+    "description": "Warm, gentle young female voice",
+    "single_text": "你好，我是Serena。",
+    "single_instruct": "Speak in a gentle, warm tone",
+    "batch_texts": [
+      "欢迎来到我的频道。",
+      "希望你喜欢这个内容。"
+    ],
+    "batch_languages": ["Chinese", "Chinese"],
+    "batch_instructs": ["", "Happy"]
+  },
+  "Uncle_Fu": {
+    "speaker": "Uncle_Fu",
+    "language": "Chinese",
+    "description": "Seasoned male voice with a low, mellow timbre",
+    "single_text": "大家好，我是福叔。",
+    "single_instruct": "Speak in a deep, mellow tone with experience and wisdom",
+    "batch_texts": [
+      "人生就像一杯茶，要慢慢品味。",
+      "年轻人，别着急，慢慢来。"
+    ],
+    "batch_languages": ["Chinese", "Chinese"],
+    "batch_instructs": ["Wise", "Calm"]
+  },
+  "Dylan": {
+    "speaker": "Dylan",
+    "language": "Chinese",
+    "description": "Youthful Beijing male voice with clear, natural timbre",
+    "single_text": "嘿，哥们儿，咱们今儿去哪儿玩啊？",
+    "single_instruct": "Speak with a Beijing dialect, youthful and energetic",
+    "batch_texts": [
+      "这事儿特别有意思！",
+      "得嘞，没问题！"
+    ],
+    "batch_languages": ["Chinese", "Chinese"],
+    "batch_instructs": ["Excited", "Casual"]
+  },
+  "Eric": {
+    "speaker": "Eric",
+    "language": "Chinese",
+    "description": "Lively Chengdu male voice with slightly husky brightness",
+    "single_text": "哈喽大家好，我是Eric，欢迎来到成都！",
+    "single_instruct": "Speak with a Sichuan dialect, lively and slightly husky",
+    "batch_texts": [
+      "巴适得板！",
+      "来嘛来嘛，莫客气！"
+    ],
+    "batch_languages": ["Chinese", "Chinese"],
+    "batch_instructs": ["Happy", "Welcoming"]
+  },
+  "Ryan": {
+    "speaker": "Ryan",
+    "language": "English",
+    "description": "Dynamic male voice with strong rhythmic drive",
+    "single_text": "Hello everyone, I'm Ryan and welcome to my channel!",
+    "single_instruct": "Speak with energy and enthusiasm",
+    "batch_texts": [
+      "She sells seashells by the seashore.",
+      "Peter Piper picked a peck of pickled peppers.",
+      "How much wood would a woodchuck chuck if a woodchuck could chuck wood?"
+    ],
+    "batch_languages": ["English", "English", "English"],
+    "batch_instructs": ["", "Very happy", "Playful"]
+  },
+  "Aiden": {
+    "speaker": "Aiden",
+    "language": "English",
+    "description": "Sunny American male voice with clear midrange",
+    "single_text": "Hey there! This is Aiden speaking, and I'm excited to share this with you.",
+    "single_instruct": "Speak in a bright, friendly American accent",
+    "batch_texts": [
+      "Welcome to today's tutorial.",
+      "Let's get started with the basics.",
+      "Don't forget to like and subscribe!"
+    ],
+    "batch_languages": ["English", "English", "English"],
+    "batch_instructs": ["Professional", "Encouraging", "Enthusiastic"]
+  },
+  "Ono_Anna": {
+    "speaker": "Ono_Anna",
+    "language": "Japanese",
+    "description": "Playful Japanese female voice with light, nimble timbre",
+    "single_text": "こんにちは、私はアンナです。よろしくお願いします。",
+    "single_instruct": "Speak in a playful, cheerful tone",
+    "batch_texts": [
+      "今日はいい天気ですね。",
+      "一緒に遊びましょう！"
+    ],
+    "batch_languages": ["Japanese", "Japanese"],
+    "batch_instructs": ["", "Excited"]
+  },
+  "Sohee": {
+    "speaker": "Sohee",
+    "language": "Korean",
+    "description": "Warm Korean female voice with rich emotion",
+    "single_text": "안녕하세요, 저는 소희입니다.",
+    "single_instruct": "Speak in a warm, emotional tone",
+    "batch_texts": [
+      "오늘 하루도 좋은 하루 되세요.",
+      "감사합니다."
+    ],
+    "batch_languages": ["Korean", "Korean"],
+    "batch_instructs": ["Warm", "Grateful"]
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "Incredulous_Panic": {
+    "language": "English",
+    "description": "Incredulous tone with a hint of panic",
+    "single_text": "It's in the top drawer... wait, it's empty? No way, that's impossible! I'm sure I put it there!",
+    "single_instruct": "Speak in an incredulous tone, but with a hint of panic beginning to creep into your voice.",
+    "batch_texts": [
+      "What? No! That can't be right!",
+      "Are you absolutely sure about this?",
+      "I don't believe it! This is crazy!"
+    ],
+    "batch_languages": ["English", "English", "English"],
+    "batch_instructs": [
+      "Speak with disbelief and rising panic",
+      "Speak with uncertainty and worry",
+      "Speak with shock and excitement"
+    ]
+  },
+  "Cheerful_Chinese": {
+    "language": "Chinese",
+    "description": "Cheerful, playful Chinese voice",
+    "single_text": "哥哥，你回来啦，人家等了你好久好久了，要抱抱！",
+    "single_instruct": "体现撒娇稚嫩的萝莉女声，音调偏高且起伏明显，营造出黏人、做作又刻意卖萌的听觉效果。",
+    "batch_texts": [
+      "今天天气真好啊！",
+      "我们一起去玩吧！",
+      "谢谢你陪着我。"
+    ],
+    "batch_languages": ["Chinese", "Chinese", "Chinese"],
+    "batch_instructs": [
+      "快乐而充满活力的语气",
+      "兴奋且期待的语气",
+      "温柔且感激的语气"
+    ]
+  },
+  "Professional_Narrator": {
+    "language": "English",
+    "description": "Professional narrator voice",
+    "single_text": "Welcome to today's presentation. We'll be covering the key concepts and strategies that will help you succeed.",
+    "single_instruct": "Speak in a clear, professional narrator voice with confidence and authority.",
+    "batch_texts": [
+      "Let's begin with the fundamentals.",
+      "Now, let's move on to the advanced topics.",
+      "In conclusion, these principles will guide you forward."
+    ],
+    "batch_languages": ["English", "English", "English"],
+    "batch_instructs": [
+      "Speak with clarity and enthusiasm",
+      "Speak with professional authority",
+      "Speak with conclusive confidence"
+    ]
+  },
+  "Excited_Teenager": {
+    "language": "English",
+    "description": "Excited teenage voice",
+    "single_text": "Oh my gosh, you won't believe what just happened! This is literally the best day ever!",
+    "single_instruct": "Speak like an excited teenager, with lots of energy and enthusiasm. Use a high-pitched, animated voice.",
+    "batch_texts": [
+      "No way! That's so cool!",
+      "I can't even right now, this is amazing!",
+      "We have to tell everyone about this!"
+    ],
+    "batch_languages": ["English", "English", "English"],
+    "batch_instructs": [
+      "Speak with surprise and excitement",
+      "Speak with overwhelming joy",
+      "Speak with enthusiastic urgency"
+    ]
+  }
+}

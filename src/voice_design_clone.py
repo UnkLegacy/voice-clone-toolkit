@@ -17,7 +17,9 @@ import torch
 import numpy as np
 import wave
 from pathlib import Path
-from typing import Optional, Union, Tuple
+from typing import Optional, Union, Tuple, Dict, Any
+import argparse
+import json
 
 try:
     from tqdm import tqdm
@@ -49,6 +51,80 @@ except ImportError:
 from qwen_tts import Qwen3TTSModel
 
 
+# =============================================================================
+# CONFIGURATION SECTION - Edit these to easily switch between different voice designs
+# =============================================================================
+
+# Path to voice design + clone profiles configuration file
+VOICE_DESIGN_CLONE_PROFILES_CONFIG = "config/voice_design_clone_profiles.json"
+
+# Default settings (can be overridden by command-line arguments)
+DEFAULT_PROFILE = "Nervous_Teen"  # Change this to switch between profiles
+RUN_SINGLE = True                  # Set to False to skip single clone generation
+RUN_BATCH = True                   # Set to False to skip batch clone generation
+PLAY_AUDIO = True                  # Set to False to skip audio playback
+
+# =============================================================================
+# END CONFIGURATION SECTION
+# =============================================================================
+
+
+def load_voice_design_clone_profiles(config_path: str = VOICE_DESIGN_CLONE_PROFILES_CONFIG) -> Dict[str, Any]:
+    """
+    Load voice design + clone profiles from JSON configuration file.
+    
+    Args:
+        config_path: Path to the JSON configuration file
+        
+    Returns:
+        Dictionary of voice design + clone profiles
+    """
+    if not os.path.exists(config_path):
+        print_progress(f"Error: Voice design + clone profiles config not found: {config_path}")
+        print_progress("Creating default config file...")
+        
+        # Create default config
+        default_profiles = {
+            "Example": {
+                "description": "Example voice design + clone profile",
+                "reference": {
+                    "text": "This is an example reference text.",
+                    "instruct": "Speak in a clear, neutral tone.",
+                    "language": "English"
+                },
+                "single_texts": [
+                    "This is the first single clone text.",
+                    "This is the second single clone text."
+                ],
+                "batch_texts": [
+                    "This is the first batch clone text.",
+                    "This is the second batch clone text."
+                ],
+                "language": "English"
+            }
+        }
+        
+        # Ensure config directory exists
+        Path(config_path).parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(config_path, 'w', encoding='utf-8') as f:
+            json.dump(default_profiles, f, indent=2, ensure_ascii=False)
+        
+        print_progress(f"Created default config at: {config_path}")
+        print_progress("Please edit this file to add your voice design + clone profiles.")
+        return default_profiles
+    
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        print_progress(f"Error parsing JSON config: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print_progress(f"Error loading voice design + clone profiles: {e}")
+        sys.exit(1)
+
+
 def print_progress(message: str):
     """Print a progress message with formatting."""
     print(f"[INFO] {message}")
@@ -73,6 +149,9 @@ def save_wav_pygame(filepath: str, audio_data: np.ndarray, sample_rate: int):
         audio_data: Audio data as numpy array
         sample_rate: Sample rate in Hz
     """
+    # Ensure parent directory exists
+    Path(filepath).parent.mkdir(parents=True, exist_ok=True)
+    
     # Ensure audio_data is in the correct format
     if audio_data.dtype != np.int16:
         # Convert float to int16
@@ -348,11 +427,132 @@ def play_audio(filepath: str):
         print_progress(f"Audio file saved at: {os.path.abspath(filepath)}")
 
 
+def parse_args(voice_profiles: Dict[str, Any]):
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Qwen3-TTS Voice Design + Clone Generation Script",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=f"""
+Available voice design + clone profiles: {', '.join(voice_profiles.keys())}
+
+Examples:
+  python src/voice_design_clone.py                      # Use default settings from config
+  python src/voice_design_clone.py --profile Nervous_Teen  # Use specific profile
+  python src/voice_design_clone.py --no-batch           # Skip batch generation
+  python src/voice_design_clone.py --only-single        # Only run single generation
+  python src/voice_design_clone.py --list-profiles      # List available profiles
+        """
+    )
+    
+    parser.add_argument(
+        "--profile", "-p",
+        type=str,
+        default=None,
+        choices=list(voice_profiles.keys()),
+        help=f"Voice design + clone profile to use (default: {DEFAULT_PROFILE})"
+    )
+    
+    parser.add_argument(
+        "--no-single",
+        action="store_true",
+        help="Skip single clone generation"
+    )
+    
+    parser.add_argument(
+        "--no-batch",
+        action="store_true",
+        help="Skip batch clone generation"
+    )
+    
+    parser.add_argument(
+        "--only-single",
+        action="store_true",
+        help="Only run single generation (skip batch)"
+    )
+    
+    parser.add_argument(
+        "--only-batch",
+        action="store_true",
+        help="Only run batch generation (skip single)"
+    )
+    
+    parser.add_argument(
+        "--no-play",
+        action="store_true",
+        help="Skip audio playback"
+    )
+    
+    parser.add_argument(
+        "--list-profiles",
+        action="store_true",
+        help="List available voice design + clone profiles and exit"
+    )
+    
+    return parser.parse_args()
+
+
+def list_design_clone_profiles(voice_profiles: Dict[str, Any]):
+    """List all available voice design + clone profiles."""
+    print("\n" + "="*60)
+    print("AVAILABLE VOICE DESIGN + CLONE PROFILES")
+    print("="*60)
+    for name, profile in voice_profiles.items():
+        print(f"\n{name}:")
+        print(f"  Description: {profile.get('description', 'N/A')}")
+        print(f"  Language: {profile['language']}")
+        ref = profile.get('reference', {})
+        ref_text = ref.get('text', '')
+        display_ref = ref_text[:50] if len(ref_text) <= 50 else ref_text[:50] + "..."
+        
+        try:
+            print(f"  Reference text: {display_ref}")
+        except UnicodeEncodeError:
+            print(f"  Reference text: [contains non-ASCII characters]")
+        
+        print(f"  Single texts: {len(profile.get('single_texts', []))} samples")
+        print(f"  Batch texts: {len(profile.get('batch_texts', []))} samples")
+    print("="*60 + "\n")
+
+
 def main():
     """Main function to run the Voice Design + Clone pipeline."""
+    # Load voice design + clone profiles from JSON config
+    voice_profiles = load_voice_design_clone_profiles()
+    
+    # Parse command-line arguments
+    args = parse_args(voice_profiles)
+    
+    # Handle --list-profiles
+    if args.list_profiles:
+        list_design_clone_profiles(voice_profiles)
+        return
+    
+    # Determine what to run
+    run_single = RUN_SINGLE and not args.no_single and not args.only_batch
+    run_batch = RUN_BATCH and not args.no_batch and not args.only_single
+    play_audio_enabled = PLAY_AUDIO and not args.no_play
+    
+    # Determine which profile to use
+    profile_name = args.profile if args.profile else DEFAULT_PROFILE
+    
+    if profile_name not in voice_profiles:
+        print_progress(f"Error: Voice design + clone profile '{profile_name}' not found!")
+        print_progress(f"Available profiles: {', '.join(voice_profiles.keys())}")
+        sys.exit(1)
+    
+    profile = voice_profiles[profile_name]
     start_time = time.time()
     
     try:
+        print("\n" + "="*60)
+        print(f"VOICE DESIGN + CLONE: {profile_name}")
+        print("="*60)
+        print_progress(f"Description: {profile.get('description', 'N/A')}")
+        print_progress(f"Language: {profile['language']}")
+        print_progress(f"Running single: {run_single}")
+        print_progress(f"Running batch: {run_batch}")
+        print_progress(f"Audio playback: {play_audio_enabled}")
+        
         # Ensure output directory exists
         ensure_output_dir()
         
@@ -363,22 +563,26 @@ def main():
         
         design_model = load_design_model()
         
-        ref_text = "H-hey! You dropped your... uh... calculus notebook? I mean, I think it's yours? Maybe?"
-        ref_instruct = "Male, 17 years old, tenor range, gaining confidence - deeper breath support now, though vowels still tighten when nervous"
+        ref_data = profile['reference']
+        ref_text = ref_data['text']
+        ref_instruct = ref_data['instruct']
+        ref_language = ref_data.get('language', profile['language'])
         
+        ref_output = f"output/Voice_Design_Clone/{profile_name}_reference.wav"
         ref_wavs, sr = create_voice_design_reference(
             design_model=design_model,
             ref_text=ref_text,
             ref_instruct=ref_instruct,
-            language="English",
-            output_file="output/Voice_Design_Clone/voice_design_reference.wav"
+            language=ref_language,
+            output_file=ref_output
         )
         
         # Play the reference audio
-        print("\n" + "="*60)
-        print("Playing reference audio...")
-        print("="*60)
-        play_audio("output/Voice_Design_Clone/voice_design_reference.wav")
+        if play_audio_enabled:
+            print("\n" + "="*60)
+            print("Playing reference audio...")
+            print("="*60)
+            play_audio(ref_output)
         
         # Step 2: Load Clone model and build reusable clone prompt
         print("\n" + "="*60)
@@ -389,78 +593,61 @@ def main():
         
         print_progress("Creating voice clone prompt from reference...")
         voice_clone_prompt = clone_model.create_voice_clone_prompt(
-            ref_audio=(ref_wavs[0], sr),  # Can also use file path: "voice_design_reference.wav"
+            ref_audio=(ref_wavs[0], sr),
             ref_text=ref_text,
         )
         print_progress("Voice clone prompt created successfully!")
         
         # Step 3: Generate single clones using the reusable prompt
-        print("\n" + "="*60)
-        print("STEP 3: GENERATE SINGLE CLONES (Reusing Prompt)")
-        print("="*60)
-        
-        sentences = [
-            "No problem! I actually... kinda finished those already? If you want to compare answers or something...",
-            "What? No! I mean yes but not like... I just think you're... your titration technique is really precise!",
-        ]
-        
-        # Generate first single clone
-        wavs1, sr1 = generate_single_clone(
-            clone_model=clone_model,
-            text=sentences[0],
-            language="English",
-            voice_clone_prompt=voice_clone_prompt,
-            output_file="output/Voice_Design_Clone/clone_single_1.wav"
-        )
-        
-        # Generate second single clone
-        wavs2, sr2 = generate_single_clone(
-            clone_model=clone_model,
-            text=sentences[1],
-            language="English",
-            voice_clone_prompt=voice_clone_prompt,
-            output_file="output/Voice_Design_Clone/clone_single_2.wav"
-        )
-        
-        # Play first single clone
-        print("\n" + "="*60)
-        print("Playing clone_single_1.wav...")
-        print("="*60)
-        play_audio("output/Voice_Design_Clone/clone_single_1.wav")
+        if run_single:
+            single_texts = profile.get('single_texts', [])
+            if single_texts:
+                print("\n" + "="*60)
+                print("STEP 3: GENERATE SINGLE CLONES (Reusing Prompt)")
+                print("="*60)
+                
+                for i, text in enumerate(single_texts, 1):
+                    output_file = f"output/Voice_Design_Clone/{profile_name}_single_{i}.wav"
+                    wavs, sr_clone = generate_single_clone(
+                        clone_model=clone_model,
+                        text=text,
+                        language=profile['language'],
+                        voice_clone_prompt=voice_clone_prompt,
+                        output_file=output_file
+                    )
+                    
+                    # Play first single clone
+                    if play_audio_enabled and i == 1:
+                        print("\n" + "="*60)
+                        play_audio(output_file)
         
         # Step 4: Generate batch clones using the reusable prompt
-        print("\n" + "="*60)
-        print("STEP 4: GENERATE BATCH CLONES (Reusing Prompt)")
-        print("="*60)
-        
-        additional_sentences = [
-            "I mean, not that I was watching you or anything! I was just... adjacent to where you were working!",
-            "Sure! Yeah! That would be... I'd like that. A lot. Too much? No, just the right amount!",
-        ]
-        
-        wavs_batch, sr_batch = generate_batch_clone(
-            clone_model=clone_model,
-            texts=additional_sentences,
-            languages=["English", "English"],
-            voice_clone_prompt=voice_clone_prompt,
-            output_prefix="output/Voice_Design_Clone/clone_batch"
-        )
-        
-        # Play first batch clone
-        print("\n" + "="*60)
-        print("Playing clone_batch_0.wav...")
-        print("="*60)
-        play_audio("output/Voice_Design_Clone/clone_batch_0.wav")
+        if run_batch:
+            batch_texts = profile.get('batch_texts', [])
+            if batch_texts:
+                print("\n" + "="*60)
+                print("STEP 4: GENERATE BATCH CLONES (Reusing Prompt)")
+                print("="*60)
+                
+                batch_languages = [profile['language']] * len(batch_texts)
+                
+                wavs_batch, sr_batch = generate_batch_clone(
+                    clone_model=clone_model,
+                    texts=batch_texts,
+                    languages=batch_languages,
+                    voice_clone_prompt=voice_clone_prompt,
+                    output_prefix=f"output/Voice_Design_Clone/{profile_name}_batch"
+                )
+                
+                # Play first batch clone
+                if play_audio_enabled:
+                    print("\n" + "="*60)
+                    play_audio(f"output/Voice_Design_Clone/{profile_name}_batch_0.wav")
         
         total_duration = time.time() - start_time
         print("\n" + "="*60)
         print_progress(f"Total execution time: {total_duration:.2f} seconds")
-        print_progress("Generated files:")
-        print_progress("  - output/Voice_Design_Clone/voice_design_reference.wav (original designed voice)")
-        print_progress("  - output/Voice_Design_Clone/clone_single_1.wav (first single clone)")
-        print_progress("  - output/Voice_Design_Clone/clone_single_2.wav (second single clone)")
-        print_progress("  - output/Voice_Design_Clone/clone_batch_0.wav (first batch clone)")
-        print_progress("  - output/Voice_Design_Clone/clone_batch_1.wav (second batch clone)")
+        print_progress(f"Profile '{profile_name}' completed successfully")
         print("="*60)
         
     except Exception as e:

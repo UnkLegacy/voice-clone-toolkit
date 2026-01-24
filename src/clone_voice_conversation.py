@@ -1,16 +1,23 @@
 """
 Qwen3-TTS Voice Clone Conversation Script Generator
 
-This script enables you to create conversations between multiple cloned voices.
-It combines the voice cloning capability with conversation scripting to generate
-realistic multi-character dialogues.
+This script enables you to create conversations between multiple actors using
+ANY voice profile type. It combines all voice generation capabilities with
+conversation scripting to generate realistic multi-character dialogues.
 
 Features:
-- Load multiple actor voice profiles
+- Support for ALL profile types: voice clones, custom voices, voice designs, and voice design+clone
+- Mix different voice types in the same conversation (e.g., DougDoug + Sohee + Incredulous_Panic)
 - Parse conversation scripts with [Actor] dialogue format
 - Generate audio for each line in order
 - Optional audio concatenation for full conversation playback
 - Support for both inline scripts and script files
+
+Actor profiles are automatically loaded from:
+- config/voice_clone_profiles.json (reference audio + transcript)
+- config/custom_voice_profiles.json (pre-built speaker voices)
+- config/voice_design_profiles.json (custom voice characteristics)
+- config/voice_design_clone_profiles.json (designed character voices)
 """
 
 import time
@@ -60,11 +67,14 @@ from qwen_tts import Qwen3TTSModel
 # CONFIGURATION SECTION
 # =============================================================================
 
-VOICE_PROFILES_CONFIG = "config/voice_clone_profiles.json"
+VOICE_CLONE_PROFILES_CONFIG = "config/voice_clone_profiles.json"
+CUSTOM_VOICE_PROFILES_CONFIG = "config/custom_voice_profiles.json"
+VOICE_DESIGN_PROFILES_CONFIG = "config/voice_design_profiles.json"
+VOICE_DESIGN_CLONE_PROFILES_CONFIG = "config/voice_design_clone_profiles.json"
 CONVERSATION_SCRIPTS_CONFIG = "config/conversation_scripts.json"
 
 # Default settings
-DEFAULT_SCRIPT = "script_file_example"  # Which script to use by default
+DEFAULT_SCRIPT = "mixed_profile_types"  # Which script to use by default
 PLAY_AUDIO = True                        # Set to False to skip audio playback
 CONCATENATE_AUDIO = True                 # Set to False to keep lines separate only
 
@@ -250,6 +260,47 @@ def concatenate_audio_files(audio_files: List[str], output_file: str, sample_rat
     print_progress(f"Concatenated audio saved to: {output_file}")
 
 
+def load_all_profiles() -> Dict[str, Any]:
+    """
+    Load all profile types and merge them into a single dictionary.
+    Tracks the profile type for each actor.
+    
+    Returns:
+        Dictionary with actor names as keys and profile data (with 'profile_type' field) as values
+    """
+    all_profiles = {}
+    
+    # Load voice clone profiles
+    if os.path.exists(VOICE_CLONE_PROFILES_CONFIG):
+        clone_profiles = load_json_config(VOICE_CLONE_PROFILES_CONFIG)
+        for name, profile in clone_profiles.items():
+            profile['profile_type'] = 'voice_clone'
+            all_profiles[name] = profile
+    
+    # Load custom voice profiles
+    if os.path.exists(CUSTOM_VOICE_PROFILES_CONFIG):
+        custom_profiles = load_json_config(CUSTOM_VOICE_PROFILES_CONFIG)
+        for name, profile in custom_profiles.items():
+            profile['profile_type'] = 'custom_voice'
+            all_profiles[name] = profile
+    
+    # Load voice design profiles
+    if os.path.exists(VOICE_DESIGN_PROFILES_CONFIG):
+        design_profiles = load_json_config(VOICE_DESIGN_PROFILES_CONFIG)
+        for name, profile in design_profiles.items():
+            profile['profile_type'] = 'voice_design'
+            all_profiles[name] = profile
+    
+    # Load voice design + clone profiles
+    if os.path.exists(VOICE_DESIGN_CLONE_PROFILES_CONFIG):
+        design_clone_profiles = load_json_config(VOICE_DESIGN_CLONE_PROFILES_CONFIG)
+        for name, profile in design_clone_profiles.items():
+            profile['profile_type'] = 'voice_design_clone'
+            all_profiles[name] = profile
+    
+    return all_profiles
+
+
 def load_model(model_path: str = "Qwen_Models/Qwen3-TTS-12Hz-1.7B-Base") -> Qwen3TTSModel:
     """Load the Qwen3-TTS model."""
     print_progress("Checking CUDA availability...")
@@ -281,22 +332,26 @@ def load_model(model_path: str = "Qwen_Models/Qwen3-TTS-12Hz-1.7B-Base") -> Qwen
 
 
 def create_actor_prompts(
-    model: Qwen3TTSModel,
+    base_model: Qwen3TTSModel,
     actors: List[str],
-    voice_profiles: Dict[str, Any]
+    voice_profiles: Dict[str, Any],
+    temp_dir: str = "output/Conversations/_temp"
 ) -> Dict[str, Any]:
     """
     Create voice clone prompts for all actors in the conversation.
+    Handles different profile types by converting them to voice clone prompts.
     
     Args:
-        model: The loaded Qwen3TTSModel
+        base_model: The loaded Base model (for cloning)
         actors: List of actor names to prepare
-        voice_profiles: Dictionary of voice profiles
+        voice_profiles: Dictionary of voice profiles (all types)
+        temp_dir: Temporary directory for generated reference audio
         
     Returns:
         Dictionary mapping actor names to their voice clone prompts
     """
     print_progress(f"Creating voice prompts for {len(actors)} actors...")
+    Path(temp_dir).mkdir(parents=True, exist_ok=True)
     actor_prompts = {}
     
     for actor in actors:
@@ -305,22 +360,120 @@ def create_actor_prompts(
             continue
         
         profile = voice_profiles[actor]
-        ref_audio = load_text_from_file_or_string(profile["voice_sample_file"])
-        ref_text = load_text_from_file_or_string(profile["sample_transcript"])
+        profile_type = profile.get('profile_type', 'voice_clone')
         
-        if not os.path.exists(ref_audio):
-            print_progress(f"Warning: Reference audio not found for '{actor}': {ref_audio}")
+        print_progress(f"Creating prompt for {actor} (type: {profile_type})...")
+        
+        try:
+            if profile_type == 'voice_clone':
+                # Standard voice clone profile
+                ref_audio = load_text_from_file_or_string(profile["voice_sample_file"])
+                ref_text = load_text_from_file_or_string(profile["sample_transcript"])
+                
+                if not os.path.exists(ref_audio):
+                    print_progress(f"Warning: Reference audio not found for '{actor}': {ref_audio}")
+                    continue
+                
+                prompt = base_model.create_voice_clone_prompt(
+                    ref_audio=ref_audio,
+                    ref_text=ref_text,
+                )
+                
+            elif profile_type == 'custom_voice':
+                # Custom voice profile - generate reference audio, then create prompt
+                print_progress(f"  Generating custom voice reference for {actor}...")
+                custom_model = load_custom_voice_model()
+                
+                ref_text = profile['single_text']
+                ref_audio_path = f"{temp_dir}/{actor}_custom_ref.wav"
+                
+                wavs, sr = custom_model.generate_custom_voice(
+                    text=ref_text,
+                    language=profile['language'],
+                    speaker=profile['speaker'],
+                    instruct=profile.get('single_instruct', ''),
+                )
+                save_wav(ref_audio_path, wavs[0], sr)
+                
+                prompt = base_model.create_voice_clone_prompt(
+                    ref_audio=ref_audio_path,
+                    ref_text=ref_text,
+                )
+                
+            elif profile_type == 'voice_design':
+                # Voice design profile - generate reference audio, then create prompt
+                print_progress(f"  Generating voice design reference for {actor}...")
+                design_model = load_voice_design_model()
+                
+                ref_text = profile['single_text']
+                ref_audio_path = f"{temp_dir}/{actor}_design_ref.wav"
+                
+                wavs, sr = design_model.generate_voice_design(
+                    text=ref_text,
+                    language=profile['language'],
+                    instruct=profile['single_instruct'],
+                )
+                save_wav(ref_audio_path, wavs[0], sr)
+                
+                prompt = base_model.create_voice_clone_prompt(
+                    ref_audio=ref_audio_path,
+                    ref_text=ref_text,
+                )
+                
+            elif profile_type == 'voice_design_clone':
+                # Voice design + clone profile - generate reference, then create prompt
+                print_progress(f"  Generating voice design+clone reference for {actor}...")
+                design_model = load_voice_design_model()
+                
+                ref_data = profile['reference']
+                ref_text = ref_data['text']
+                ref_audio_path = f"{temp_dir}/{actor}_design_clone_ref.wav"
+                
+                wavs, sr = design_model.generate_voice_design(
+                    text=ref_text,
+                    language=ref_data.get('language', profile['language']),
+                    instruct=ref_data['instruct'],
+                )
+                save_wav(ref_audio_path, wavs[0], sr)
+                
+                prompt = base_model.create_voice_clone_prompt(
+                    ref_audio=ref_audio_path,
+                    ref_text=ref_text,
+                )
+            else:
+                print_progress(f"Warning: Unknown profile type '{profile_type}' for actor '{actor}'")
+                continue
+            
+            actor_prompts[actor] = prompt
+            print_progress(f"  ✓ {actor} prompt created")
+            
+        except Exception as e:
+            print_progress(f"Error creating prompt for '{actor}': {e}")
             continue
-        
-        print_progress(f"Creating prompt for {actor}...")
-        prompt = model.create_voice_clone_prompt(
-            ref_audio=ref_audio,
-            ref_text=ref_text,
-        )
-        actor_prompts[actor] = prompt
-        print_progress(f"  ✓ {actor} prompt created")
     
     return actor_prompts
+
+
+def load_custom_voice_model(model_path: str = "Qwen_Models/Qwen3-TTS-12Hz-1.7B-CustomVoice") -> Qwen3TTSModel:
+    """Load the CustomVoice model."""
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = Qwen3TTSModel.from_pretrained(
+        model_path,
+        device_map={"": device},
+        dtype=torch.bfloat16,
+    )
+    return model
+
+
+def load_voice_design_model(model_path: str = "Qwen_Models/Qwen3-TTS-12Hz-1.7B-VoiceDesign") -> Qwen3TTSModel:
+    """Load the VoiceDesign model."""
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = Qwen3TTSModel.from_pretrained(
+        model_path,
+        device_map={"": device},
+        dtype=torch.bfloat16,
+    )
+    return model
 
 
 def generate_conversation(
@@ -467,8 +620,11 @@ def main():
     # Parse arguments
     args = parse_args()
     
-    # Load configurations
-    voice_profiles = load_json_config(VOICE_PROFILES_CONFIG)
+    # Load all profile types and conversation scripts
+    print_progress("Loading all voice profiles...")
+    voice_profiles = load_all_profiles()
+    print_progress(f"Loaded {len(voice_profiles)} total profiles from all sources")
+    
     conversation_scripts = load_json_config(CONVERSATION_SCRIPTS_CONFIG)
     
     # Handle --list-scripts
@@ -522,7 +678,7 @@ def main():
         print("\n" + "="*60)
         print("PREPARING ACTOR VOICES")
         print("="*60)
-        actor_prompts = create_actor_prompts(model, actors, voice_profiles)
+        actor_prompts = create_actor_prompts(model, actors, voice_profiles, temp_dir=output_dir)
         
         if not actor_prompts:
             print_progress("Error: No valid actor prompts created!")

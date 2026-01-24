@@ -760,15 +760,40 @@ The project includes several example conversations:
 
 ### Creating Custom Scripts
 
-1. **Add actors to voice profiles** (if not already present):
+**Note:** Actors can come from ANY profile type! You can mix:
+- Voice clones (from `voice_clone_profiles.json`)
+- Custom voices (from `custom_voice_profiles.json` - e.g., Ryan, Sohee)
+- Voice designs (from `voice_design_profiles.json` - e.g., Incredulous_Panic)
+- Voice design+clone (from `voice_design_clone_profiles.json` - e.g., Confident_Professional)
+
+**Example mixing profile types:**
+```json
+{
+  "mixed_conversation": {
+    "actors": ["DougDoug", "Sohee", "Incredulous_Panic", "Confident_Professional"],
+    "script": [
+      "[DougDoug] Hey everyone, we have special guests!",
+      "[Sohee] 안녕하세요! Happy to be here!",
+      "[Incredulous_Panic] Wait, what? I'm supposed to talk now?",
+      "[Confident_Professional] Don't worry, you're doing great!"
+    ]
+  }
+}
+```
+
+1. **Add actors to profiles** (if not already present - choose appropriate type):
    ```json
-   // In config/voice_clone_profiles.json
+   // Option A: Voice clone (config/voice_clone_profiles.json)
    {
      "MyActor": {
        "voice_sample_file": "./input/MyActor.wav",
        "sample_transcript": "Reference transcript..."
      }
    }
+   
+   // Option B: Use existing custom voice speakers (Ryan, Sohee, etc.)
+   // Option C: Use existing voice design profiles
+   // Option D: Use existing voice design+clone characters
    ```
 
 2. **Create script file** (optional):
