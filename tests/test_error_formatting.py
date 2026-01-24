@@ -73,11 +73,12 @@ class TestErrorFormatting(unittest.TestCase):
                     has_error_messages = bool(re.search(r'["\'].*[Ee]rror[:\s]', content))
                     
                     if has_error_messages:
-                        # Check if print_error is imported
+                        # Check if print_error is imported (multiple patterns)
                         has_print_error_import = (
                             'print_error' in content and 
                             ('from .utils.progress import' in content or 
-                             'from utils.progress import' in content)
+                             'from utils.progress import' in content or
+                             'print_error = utils.print_error' in content)  # New utils pattern
                         )
                         
                         if not has_print_error_import:

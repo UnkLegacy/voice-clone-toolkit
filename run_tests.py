@@ -121,8 +121,8 @@ Examples:
         
         print("\n" + "="*60)
         print("OVERALL RESULTS:")
-        print(f"Main tests: {'✓ PASSED' if main_success else '✗ FAILED'}")
-        print(f"Quality tests: {'✓ PASSED' if quality_success else '✗ FAILED'}")
+        print(f"Main tests: {'PASSED' if main_success else 'FAILED'}")
+        print(f"Quality tests: {'PASSED' if quality_success else 'FAILED'}")
         print("="*60)
         
     else:

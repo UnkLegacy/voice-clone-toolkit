@@ -27,6 +27,20 @@ from pathlib import Path
 from typing import Optional, List
 import sys
 
+# Import utilities from our new modular structure
+try:
+    from .import_helper import get_utils
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).parent))
+    from import_helper import get_utils
+
+# Single import - no duplicates!
+utils = get_utils()
+
+# Access utility functions
+print_progress = utils.print_progress
+print_error = utils.print_error
+
 try:
     from pydub import AudioSegment
     PYDUB_AVAILABLE = True
@@ -41,12 +55,7 @@ except ImportError:
 
 def print_info(message: str):
     """Print an info message."""
-    print(f"[INFO] {message}")
-
-
-def print_error(message: str):
-    """Print an error message."""
-    print(f"[ERROR] {message}", file=sys.stderr)
+    print_progress(message)
 
 
 def convert_audio_file(

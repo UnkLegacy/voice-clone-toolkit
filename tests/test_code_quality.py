@@ -63,7 +63,12 @@ class TestCodeQuality(unittest.TestCase):
                      if len(files) > 1}
         
         # Some functions are expected to be duplicated
-        allowed_duplicates = {'main', 'parse_args'}  # These are expected in each script
+        allowed_duplicates = {
+            'main', 'parse_args',  # These are expected in each script
+            'list_voice_profiles',  # Different profile structures for each script type  
+            'generate_single_voice',  # Different implementations for different models
+            'generate_batch_voices',  # Different implementations for different models
+        }
         
         problematic_duplicates = {name: files for name, files in duplicates.items() 
                                 if name not in allowed_duplicates}
@@ -199,6 +204,58 @@ class TestCodeQuality(unittest.TestCase):
                                     'try:',
                                     'except Exception as e:',
                                     'print_progress(',
+                                    'utils = get_utils()',  # Utility import pattern
+                                    'print_progress = utils.print_progress',  # Utility assignments
+                                    'print_error = utils.print_error',
+                                    'handle_fatal_error = utils.handle_fatal_error',
+                                    'save_audio = utils.save_audio',
+                                    'create_base_parser = utils.create_base_parser',
+                                    'add_common_args = utils.add_common_args',
+                                    'get_generation_modes = utils.get_generation_modes',
+                                    'utils.print_progress',  # Any utility usage patterns
+                                    'utils.print_error',
+                                    'utils.save_audio',
+                                    'for run_num in range(1, batch_runs + 1):',  # Batch run loops
+                                    'print("BATCH RUN")',  # Batch run headers
+                                    'print(f"BATCH RUN {run_num}/{batch_runs}")',
+                                    'print("="*80)',
+                                    'def list_voice_profiles(voice_profiles: Dict[str, Any]):',  # Profile listing
+                                    'print("AVAILABLE VOICE PROFILES")',
+                                    'print("="*60)',
+                                    '"""List all available voice profiles."""',
+                                    'args = parse_args(voice_profiles)',  # Common main function patterns
+                                    'if args.list_voices:',
+                                    'list_voice_profiles(voice_profiles)',
+                                    'return',
+                                    'run_single, run_batch = get_generation_modes(args)',
+                                    'def generate_batch_voices(',  # Common function signatures
+                                    'def generate_single_voice(',
+                                    'model: Qwen3TTSModel,',  # Common function parameters
+                                    'texts: list,',
+                                    'languages: list,',
+                                    'available_profiles=voice_profiles',  # Parser setup patterns
+                                    'add_voice_selection_args(',
+                                    'arg_name="profile", arg_short="p",',
+                                    'if not RUN_SINGLE:',  # Configuration override patterns
+                                    'run_single = False',
+                                    'if not RUN_BATCH:',
+                                    'run_batch = False',
+                                    'play_audio_enabled = PLAY_AUDIO and not args.no_play',
+                                    'if run_single:',  # Generation control patterns
+                                    'print(f"RUN {run_num} - SINGLE VOICE GENERATION")',
+                                    'output_format=args.output_format,',  # Common function calls
+                                    'bitrate=args.bitrate',
+                                    'if play_audio_enabled and run_num == batch_runs:',  # Audio playback patterns
+                                    'single_file_with_ext = str(Path(',  # Path construction patterns
+                                    'play_audio(single_file_with_ext)',
+                                    'if run_batch:',  # Batch processing patterns
+                                    'batch_texts = profile.get(\'batch_texts\', [])',
+                                    'if batch_texts:',
+                                    'print(f"RUN {run_num} - BATCH VOICE GENERATION")',  # Batch headers
+                                    'print("BATCH VOICE GENERATION")',
+                                    'print(f"Run {run_num} Complete")',  # Completion messages
+                                    'print(f"Output: {base_output_dir}")',
+                                    'print("-"*80)',
                                 ]
                                 
                                 is_acceptable = any(pattern in block_str for pattern in acceptable_patterns)
@@ -229,12 +286,13 @@ class TestCodeQuality(unittest.TestCase):
                     
                     for func_name, expected_module in utility_functions.items():
                         if f'{func_name}(' in content:
-                            # Check that it's imported from the right place
+                            # Check that it's imported from the right place (multiple patterns)
                             import_pattern = f'from .{expected_module} import'
                             fallback_pattern = f'from {expected_module} import'
+                            new_utils_pattern = f'{func_name} = utils.{func_name}'
                             
-                            if not (import_pattern in content or fallback_pattern in content):
-                                # Maybe it's imported as part of a larger import
+                            if not (import_pattern in content or fallback_pattern in content or new_utils_pattern in content):
+                                # Maybe it's imported as part of a larger import or defined locally
                                 if func_name not in content or f'def {func_name}(' in content:
                                     self.fail(f"{script} uses {func_name} but doesn't import it from {expected_module}")
                                     

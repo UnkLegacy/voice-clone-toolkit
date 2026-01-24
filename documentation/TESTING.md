@@ -5,8 +5,14 @@ This document provides information about testing the Voice Clone Toolkit.
 ## Quick Start
 
 ```bash
-# Run all tests
+# Run main unit tests only (default)
 python run_tests.py
+
+# Run all tests (main + quality)
+python run_tests.py --all
+
+# Run only quality tests
+python run_tests.py --quality
 
 # Or use unittest directly
 python -m unittest discover tests -v
@@ -53,20 +59,70 @@ The project includes comprehensive unit tests for:
 - ✅ WAV file saving with different formats
 - ✅ Command-line argument parsing
 
+### convert_audio_format.py
+- ✅ Audio format conversion (WAV to MP3)
+- ✅ Single file and directory conversion
+- ✅ Command-line argument parsing
+- ✅ Error handling for missing files
+
+### utils/ modules
+- ✅ Progress reporting and error handling (`progress.py`)
+- ✅ Audio processing and format conversion (`audio_utils.py`)
+- ✅ Command-line argument parsing (`cli_args.py`)
+- ✅ JSON configuration management (`config_loader.py`)
+- ✅ Model loading and device management (`model_utils.py`)
+- ✅ File operations and text handling (`file_utils.py`)
+
+## Quality Tests
+
+In addition to main unit tests, the project includes **quality tests** that catch common development issues:
+
+### Import Integrity Tests (`test_import_integrity.py`)
+- ✅ Missing imports (torch, wave, pydub, etc.)
+- ✅ Duplicate imports across modules
+- ✅ Undefined name usage
+- ✅ Direct script execution failures
+
+### Error Formatting Tests (`test_error_formatting.py`)
+- ✅ Inappropriate use of print_progress for errors
+- ✅ Missing print_error imports
+- ✅ Consistent error message patterns
+
+### Code Quality Tests (`test_code_quality.py`)
+- ✅ Duplicate function definitions
+- ✅ Large code duplication between files
+- ✅ Function redefinition issues
+- ✅ Proper utility function usage
+
 ## Running Specific Tests
 
+### Main Unit Tests
 ```bash
 # Run tests for a specific module
-python -m unittest tests.test_clone_voice
-python -m unittest tests.test_custom_voice
-python -m unittest tests.test_voice_design
+python -m unittest tests.test_clone_voice -v
+python -m unittest tests.test_custom_voice -v
+python -m unittest tests.test_voice_design -v
+
+# Run utility tests
+python -m unittest tests.test_utils_progress -v
+python -m unittest tests.test_utils_audio_utils -v
 
 # Run a specific test class
-python -m unittest tests.test_clone_voice.TestLoadVoiceProfiles
-python -m unittest tests.test_custom_voice.TestLoadCustomVoiceProfiles
+python -m unittest tests.test_clone_voice.TestLoadVoiceProfiles -v
 
 # Run a specific test method
-python -m unittest tests.test_clone_voice.TestLoadVoiceProfiles.test_load_valid_profiles
+python -m unittest tests.test_clone_voice.TestLoadVoiceProfiles.test_load_valid_profiles -v
+```
+
+### Quality Tests
+```bash
+# Run all quality tests
+python run_tests.py --quality
+
+# Run specific quality test modules
+python -m unittest tests.test_import_integrity -v
+python -m unittest tests.test_error_formatting -v
+python -m unittest tests.test_code_quality -v
 ```
 
 ## Test Organization
@@ -75,11 +131,25 @@ python -m unittest tests.test_clone_voice.TestLoadVoiceProfiles.test_load_valid_
 tests/
 ├── __init__.py                           # Package initialization
 ├── README.md                             # Testing documentation
+│
+├── Main Unit Tests:
 ├── test_clone_voice.py                   # Tests for src/clone_voice.py
 ├── test_clone_voice_conversation.py      # Tests for src/clone_voice_conversation.py
 ├── test_custom_voice.py                  # Tests for src/custom_voice.py
 ├── test_voice_design.py                  # Tests for src/voice_design.py
-└── test_voice_design_clone.py            # Tests for src/voice_design_clone.py
+├── test_voice_design_clone.py            # Tests for src/voice_design_clone.py
+├── test_convert_audio_format.py          # Tests for src/convert_audio_format.py
+├── test_utils_progress.py                # Tests for src/utils/progress.py
+├── test_utils_audio_utils.py             # Tests for src/utils/audio_utils.py
+├── test_utils_cli_args.py                # Tests for src/utils/cli_args.py
+├── test_utils_config_loader.py           # Tests for src/utils/config_loader.py
+├── test_utils_model_utils.py             # Tests for src/utils/model_utils.py
+├── test_utils_file_utils.py              # Tests for src/utils/file_utils.py
+│
+└── Quality Tests:
+    ├── test_import_integrity.py          # Import-related quality checks
+    ├── test_error_formatting.py          # Error message formatting checks
+    └── test_code_quality.py              # Code structure and duplication checks
 ```
 
 ## Writing New Tests

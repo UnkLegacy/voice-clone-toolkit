@@ -32,18 +32,14 @@ import torch
 import wave
 
 # Import utilities from our new modular structure
-def import_utils():
-    """Import utility modules with fallback for direct execution."""
-    try:
-        from . import utils
-        return utils
-    except ImportError:
-        sys.path.insert(0, str(Path(__file__).parent))
-        import utils
-        return utils
+try:
+    from .import_helper import get_utils
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).parent))
+    from import_helper import get_utils
 
 # Single import - no duplicates!
-utils = import_utils()
+utils = get_utils()
 
 # Access utility functions
 print_progress = utils.print_progress
@@ -74,6 +70,14 @@ try:
     from tqdm import tqdm
 except ImportError:
     tqdm = None
+
+# Optional dependency for MP3 support
+try:
+    from pydub import AudioSegment
+    PYDUB_AVAILABLE = True
+except ImportError:
+    AudioSegment = None
+    PYDUB_AVAILABLE = False
 
 
 # =============================================================================

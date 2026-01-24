@@ -8,7 +8,7 @@ and progress reporting for all voice generation scripts.
 import torch
 from typing import Optional, Dict, Any
 
-from .progress import print_progress
+from .progress import print_progress, print_error
 
 # Optional dependency handling
 try:
@@ -106,7 +106,7 @@ def load_model_with_device(model_path: str,
         return model
     
     except Exception as e:
-        print_progress(f"Error loading {model_desc}: {e}")
+        print_error(f"Error loading {model_desc}: {e}")
         raise
 
 

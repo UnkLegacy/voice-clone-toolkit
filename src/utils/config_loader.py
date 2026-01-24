@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, Union, List, Optional, Callable
 
-from .progress import print_progress
+from .progress import print_progress, print_error
 from .file_utils import load_text_from_file_or_string
 
 
@@ -33,7 +33,7 @@ def load_json_config(config_path: str,
     """
     if not os.path.exists(config_path):
         if create_default and default_factory:
-            print_progress(f"Error: {error_message_prefix} not found: {config_path}")
+            print_error(f"{error_message_prefix} not found: {config_path}")
             print_progress("Creating default config file...")
             
             # Create default config
@@ -49,17 +49,17 @@ def load_json_config(config_path: str,
             print_progress(f"Please edit this file to add your {error_message_prefix}.")
             return default_config
         else:
-            print_progress(f"Error: {error_message_prefix} not found: {config_path}")
+            print_error(f"{error_message_prefix} not found: {config_path}")
             return {}
     
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
             return json.load(f)
     except json.JSONDecodeError as e:
-        print_progress(f"Error parsing JSON {error_message_prefix}: {e}")
+        print_error(f"Error parsing JSON {error_message_prefix}: {e}")
         sys.exit(1)
     except Exception as e:
-        print_progress(f"Error loading {error_message_prefix}: {e}")
+        print_error(f"Error loading {error_message_prefix}: {e}")
         sys.exit(1)
 
 
@@ -263,7 +263,7 @@ def validate_profile_structure(profile: Dict[str, Any],
     missing_fields = [field for field in required_fields if field not in profile]
     
     if missing_fields:
-        print_progress(f"Error: {profile_name} is missing required fields: {missing_fields}")
+        print_error(f"{profile_name} is missing required fields: {missing_fields}")
         return False
     
     return True

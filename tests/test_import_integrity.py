@@ -43,21 +43,29 @@ class TestImportIntegrity(unittest.TestCase):
             module_name = script[:-3]  # Remove .py extension
             
             with self.subTest(script=script):
-                # Test importability
-                spec = importlib.util.spec_from_file_location(module_name, script_path)
-                self.assertIsNotNone(spec, f"Could not create spec for {script}")
+                # Test importability - add src directory to path for fallback imports
+                original_path = sys.path[:]
+                if str(self.src_dir) not in sys.path:
+                    sys.path.insert(0, str(self.src_dir))
                 
-                module = importlib.util.module_from_spec(spec)
-                
-                # This should not raise ImportError
                 try:
-                    spec.loader.exec_module(module)
-                except ImportError as e:
-                    self.fail(f"ImportError in {script}: {e}")
-                except Exception as e:
-                    # Other exceptions might be expected (like missing config files)
-                    # but ImportError specifically indicates missing imports
-                    pass
+                    spec = importlib.util.spec_from_file_location(module_name, script_path)
+                    self.assertIsNotNone(spec, f"Could not create spec for {script}")
+                    
+                    module = importlib.util.module_from_spec(spec)
+                    
+                    # This should not raise ImportError
+                    try:
+                        spec.loader.exec_module(module)
+                    except ImportError as e:
+                        self.fail(f"ImportError in {script}: {e}")
+                    except Exception as e:
+                        # Other exceptions might be expected (like missing config files)
+                        # but ImportError specifically indicates missing imports
+                        pass
+                finally:
+                    # Restore original sys.path
+                    sys.path[:] = original_path
     
     def test_utility_modules_importable(self):
         """Test that all utility modules can be imported without errors."""
@@ -129,7 +137,23 @@ class TestImportIntegrity(unittest.TestCase):
                     for imp in imports:
                         import_counts[imp] = import_counts.get(imp, 0) + 1
                     
-                    duplicates = {imp: count for imp, count in import_counts.items() if count > 1}
+                    # Filter out expected hybrid import patterns (exactly 2 occurrences)
+                    # These are intentional try/except fallback imports
+                    expected_hybrid_patterns = [
+                        "from .import_helper import get_utils",
+                        "from import_helper import get_utils"
+                    ]
+                    
+                    duplicates = {}
+                    for imp, count in import_counts.items():
+                        if count > 1:
+                            # Check if this is a hybrid import pattern with exactly 2 occurrences
+                            is_hybrid = any(pattern in imp for pattern in expected_hybrid_patterns)
+                            if is_hybrid and count == 2:
+                                # This is expected - try/except pattern
+                                continue
+                            else:
+                                duplicates[imp] = count
                     
                     if duplicates:
                         self.fail(f"Duplicate imports found in {script}: {duplicates}")

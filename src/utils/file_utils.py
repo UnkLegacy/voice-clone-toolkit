@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 from typing import Union, List, Optional, Dict, Any
 
-from .progress import print_progress
+from .progress import print_progress, print_error
 
 
 def load_text_from_file_or_string(value: Union[str, List[str]]) -> Union[str, List[str]]:
@@ -159,7 +159,7 @@ def read_text_file(filepath: Union[str, Path],
         return content
         
     except Exception as e:
-        print_progress(f"Error reading file '{filepath}': {e}")
+        print_error(f"Error reading file '{filepath}': {e}")
         return None
 
 
@@ -191,7 +191,7 @@ def write_text_file(filepath: Union[str, Path],
         return True
         
     except Exception as e:
-        print_progress(f"Error writing file '{filepath}': {e}")
+        print_error(f"Error writing file '{filepath}': {e}")
         return False
 
 
@@ -253,7 +253,7 @@ def find_files(directory: Union[str, Path],
         else:
             return list(path.glob(pattern))
     except Exception as e:
-        print_progress(f"Error searching directory '{directory}': {e}")
+        print_error(f"Error searching directory '{directory}': {e}")
         return []
 
 
@@ -288,7 +288,7 @@ def copy_file(source: Union[str, Path],
         return True
         
     except Exception as e:
-        print_progress(f"Error copying file '{source}' to '{destination}': {e}")
+        print_error(f"Error copying file '{source}' to '{destination}': {e}")
         return False
 
 
@@ -326,11 +326,11 @@ def validate_file_exists(filepath: Union[str, Path],
     path = Path(filepath)
     
     if not path.exists():
-        print_progress(f"Error: {file_type} not found: {filepath}")
+        print_error(f"{file_type} not found: {filepath}")
         return False
     
     if not path.is_file():
-        print_progress(f"Error: Path is not a file: {filepath}")
+        print_error(f"Path is not a file: {filepath}")
         return False
     
     return True
