@@ -1,6 +1,7 @@
 # Qwen3-TTS Voice Clone Scripts
 
 [![Tests](https://github.com/UnkLegacy/Qwen3-TTS_Scripts/actions/workflows/tests.yml/badge.svg)](https://github.com/UnkLegacy/Qwen3-TTS_Scripts/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A collection of Python scripts for voice cloning and text-to-speech generation using the Qwen3-TTS models.
 
@@ -895,6 +896,12 @@ The project includes several example conversations:
 - **Line Length**: Keep individual lines conversational (1-3 sentences)
 - **Actor Consistency**: Ensure actor names match voice profile names exactly
 - **Test First**: Start with short scripts to verify voice quality
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+**TL;DR**: You are free to use, modify, and distribute this software for any purpose, including commercial use, as long as you include the original copyright notice.
 
 ---
 

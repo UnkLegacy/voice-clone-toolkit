@@ -7,6 +7,10 @@ Complete directory structure and file organization for the Qwen3-TTS Scripts pro
 ```
 Qwen3-TTS_Scripts/
 ├── .gitignore                    # Git ignore rules
+├── .github/                      # GitHub configuration
+│   └── workflows/
+│       └── tests.yml                  # CI/CD workflow for automated testing
+├── LICENSE                       # MIT License
 ├── README.md                     # Main project documentation
 ├── INSTALLATION.md               # Installation guide
 ├── run_tests.py                  # Test runner script
@@ -87,11 +91,27 @@ Main Python scripts located in `src/` directory:
 | `src/voice_design.py` | Design voices with natural language |
 | `src/voice_design_clone.py` | Combine voice design with cloning |
 
-### Root Scripts
+### Root Files
 
 | File | Purpose |
 |------|---------|
+| `LICENSE` | MIT License - defines usage terms |
+| `README.md` | Main project documentation and getting started guide |
+| `INSTALLATION.md` | Detailed installation instructions |
 | `run_tests.py` | Test runner for all unit tests |
+
+### GitHub Configuration (`.github/`)
+
+Contains GitHub-specific configuration:
+
+| File | Purpose |
+|------|---------|
+| `.github/workflows/tests.yml` | CI/CD workflow for automated testing on push |
+
+**Features:**
+- Runs all unit tests automatically on every push
+- Tests against Python 3.10, 3.11, and 3.12
+- Provides test status badge in README
 
 ### Configuration (`config/`)
 
