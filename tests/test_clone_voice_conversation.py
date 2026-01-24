@@ -23,6 +23,7 @@ from src.clone_voice_conversation import (
     save_wav,
     parse_args,
     list_scripts,
+    list_all_voices,
 )
 
 
@@ -214,6 +215,51 @@ class TestListScripts(unittest.TestCase):
         self.assertTrue(mock_print.called)
 
 
+class TestListAllVoices(unittest.TestCase):
+    """Test listing all voice profiles from all sources."""
+    
+    @patch('builtins.print')
+    def test_list_all_voices(self, mock_print):
+        """Test listing all voice profiles from all types."""
+        test_profiles = {
+            "clone": {
+                "Voice1": {
+                    "voice_sample_file": "./input/voice1.wav",
+                    "sample_transcript": "Transcript 1"
+                }
+            },
+            "custom": {
+                "Voice2": {
+                    "speaker": "Voice2",
+                    "language": "English"
+                }
+            },
+            "design": {
+                "Voice3": {
+                    "description": "Voice 3",
+                    "language": "English"
+                }
+            },
+            "design_clone": {
+                "Voice4": {
+                    "description": "Voice 4",
+                    "language": "English"
+                }
+            }
+        }
+        
+        # Should not raise an exception
+        try:
+            list_all_voices(test_profiles)
+            success = True
+        except Exception as e:
+            success = False
+            print(f"Exception raised: {e}")
+        
+        self.assertTrue(success)
+        self.assertTrue(mock_print.called)
+
+
 class TestParseArgs(unittest.TestCase):
     """Test command-line argument parsing."""
     
@@ -228,6 +274,12 @@ class TestParseArgs(unittest.TestCase):
         """Test parsing --list-scripts flag."""
         args = parse_args()
         self.assertTrue(args.list_scripts)
+    
+    @patch('sys.argv', ['Clone_Voice_Conversation.py', '--list-voices'])
+    def test_parse_list_voices(self):
+        """Test parsing --list-voices flag."""
+        args = parse_args()
+        self.assertTrue(args.list_voices)
     
     @patch('sys.argv', ['Clone_Voice_Conversation.py', '--no-play'])
     def test_parse_no_play(self):
