@@ -66,5 +66,176 @@
       "I've seen many seasons come and go, and each one has brought its own special beauty."
     ],
     "language": "English"
+  },
+  "Sultry_Femme_Fatale": {
+    "description": "Sultry, seductive female voice with breathy undertones",
+    "reference": {
+      "text": "Come closer, darling. I've been waiting for you all night. Don't keep me waiting any longer.",
+      "instruct": "Female, late 20s to early 30s, alto to mezzo-soprano range. Sultry and seductive with breathy undertones. Lower pitch slightly, speak slowly and deliberately with a hint of desire. Voice should be smooth, alluring, and slightly husky.",
+      "language": "English"
+    },
+    "single_texts": [
+      "You have no idea how much I've been thinking about you.",
+      "The way you look at me makes my heart race with anticipation.",
+      "Tonight, I want to show you exactly what I've been dreaming about."
+    ],
+    "batch_texts": [
+      "I've been imagining this moment, this closeness, all day long.",
+      "Your touch is everything I've been craving, everything I need.",
+      "Let me show you how much I want you, how much I need you right now."
+    ],
+    "language": "English"
+  },
+  "Passionate_Siren": {
+    "description": "Passionate, intense female voice with emotional depth",
+    "reference": {
+      "text": "I can't resist you any longer. Every touch, every glance drives me wild with desire.",
+      "instruct": "Female, mid-20s to early 30s, mezzo-soprano range. Passionate and intense with emotional depth. Voice should convey raw desire and longing, with slight breathlessness. Let emotion show through - voice trembling slightly with intensity.",
+      "language": "English"
+    },
+    "single_texts": [
+      "Your presence alone sets my entire body on fire with need.",
+      "I've never wanted anyone the way I want you right now, in this moment.",
+      "Take me, make me yours completely, without any hesitation."
+    ],
+    "batch_texts": [
+      "I can feel your heartbeat against mine, and it's driving me absolutely insane.",
+      "Don't stop, please don't stop. I need more, I need everything you can give me.",
+      "This is what I've been waiting for, what I've been dreaming about every single night."
+    ],
+    "language": "English"
+  },
+  "Whispering_Temptress": {
+    "description": "Soft, whispering female voice with intimate undertones",
+    "reference": {
+      "text": "Shh, come here. I want to tell you a secret... something I've been keeping just for you.",
+      "instruct": "Female, mid-20s, soprano to mezzo range. Soft, whispering voice meant for intimate moments. Keep voice low and close, as if sharing a secret in the dark. Breathiness is key - voice should be barely above a whisper, intimate and seductive.",
+      "language": "English"
+    },
+    "single_texts": [
+      "I've been imagining this moment, this closeness, all day long.",
+      "Your touch sends shivers through me in the most delicious way possible.",
+      "Let me show you how much I want you, how much I need you right now."
+    ],
+    "batch_texts": [
+      "Come closer, I want to feel your warmth against my skin.",
+      "I've been waiting for you, dreaming about this exact moment.",
+      "Don't say a word, just let me show you what I've been thinking about."
+    ],
+    "language": "English"
+  },
+  "Deep_Seductive_Male": {
+    "description": "Deep, seductive male voice with commanding presence",
+    "reference": {
+      "text": "You're mine tonight, and I'm not letting you go. Not until I've had my fill of you.",
+      "instruct": "Male, early to mid-30s, baritone to bass range. Deep, seductive voice with commanding presence. Lower voice naturally, speak with confidence and desire, letting each word carry weight. Voice should be smooth but authoritative, with a hint of roughness.",
+      "language": "English"
+    },
+    "single_texts": [
+      "I've been watching you, wanting you, all evening long, and now you're finally here.",
+      "The way you move, the way you look at me, it drives me absolutely insane with desire.",
+      "Come here, let me show you exactly what I've been thinking about all night."
+    ],
+    "batch_texts": [
+      "You have no idea what you do to me, how you make me feel when you're near.",
+      "I want to take my time with you, explore every inch of you slowly and deliberately.",
+      "Tonight belongs to us, and I'm not letting anything or anyone interrupt this moment."
+    ],
+    "language": "English"
+  },
+  "Passionate_Romantic_Male": {
+    "description": "Passionate, romantic male voice with emotional intensity",
+    "reference": {
+      "text": "You're beautiful, absolutely breathtaking. I can't believe you're here with me, that you're mine.",
+      "instruct": "Male, late 20s to mid-30s, tenor to baritone range. Passionate and romantic with emotional intensity. Voice should convey deep affection mixed with desire, warm and sincere. Let emotion show through - voice should be full of feeling and tenderness.",
+      "language": "English"
+    },
+    "single_texts": [
+      "Every moment with you feels like a dream I never want to wake from, ever.",
+      "I've never felt this way about anyone before, and it's both terrifying and exhilarating.",
+      "Let me love you the way you deserve to be loved, completely and without reservation."
+    ],
+    "batch_texts": [
+      "Your smile, your laugh, everything about you makes me fall deeper every single day.",
+      "I want to memorize every curve, every sigh, every moment we share together.",
+      "You're not just beautiful, you're everything I never knew I was searching for."
+    ],
+    "language": "English"
+  },
+  "Smooth_Charmer": {
+    "description": "Smooth, charming male voice with playful seduction",
+    "reference": {
+      "text": "Well, well, well. Look what we have here. You're even more stunning up close than I imagined.",
+      "instruct": "Male, mid-20s to early 30s, baritone range. Smooth, charming voice with playful seduction. Use confident, slightly teasing tone with hint of mischief. Voice should be smooth and inviting, with a playful edge that's undeniably attractive.",
+      "language": "English"
+    },
+    "single_texts": [
+      "I've been trying to get you alone all night, and now here we are, finally.",
+      "You know exactly what you're doing to me, don't you? And I love every second of it.",
+      "Let's make this night one we'll both remember forever, shall we?"
+    ],
+    "batch_texts": [
+      "I've been watching you all evening, and I have to say, you're absolutely captivating.",
+      "Care to find out what I've been thinking about? I promise it'll be worth your while.",
+      "You're playing a dangerous game, and I'm more than willing to play along."
+    ],
+    "language": "English"
+  },
+  "Breathy_Enchantress": {
+    "description": "Breathy, enchanting female voice with ethereal quality",
+    "reference": {
+      "text": "I've been dreaming of this moment. The way you make me feel... it's intoxicating, overwhelming.",
+      "instruct": "Female, mid-20s, soprano range. Breathy, enchanting voice with ethereal quality. Voice should be soft and airy, as if speaking in a dream. Heavy breathiness, voice barely above a whisper at times, with an otherworldly, mesmerizing quality.",
+      "language": "English"
+    },
+    "single_texts": [
+      "Your touch sends shivers down my spine in the most delicious, intoxicating way possible.",
+      "I want to lose myself completely in you tonight, forget everything except this moment.",
+      "Make me forget everything except for you, right here, right now, in this perfect moment."
+    ],
+    "batch_texts": [
+      "I've been waiting for this, dreaming about what it would feel like to be this close to you.",
+      "Every breath you take, every sound you make, it's like music to my ears.",
+      "Let me show you how much I want you, how much I need you, how much I crave you."
+    ],
+    "language": "English"
+  },
+  "Dominant_Alpha": {
+    "description": "Dominant, alpha male voice with commanding authority",
+    "reference": {
+      "text": "You belong to me now. And I take what's mine. No questions, no hesitation, just complete surrender.",
+      "instruct": "Male, early to mid-30s, bass to low baritone range. Dominant, alpha male voice with commanding authority. Use deep, powerful voice with absolute confidence and control. Voice should be firm, authoritative, with no room for argument. Low pitch, slow deliberate speech.",
+      "language": "English"
+    },
+    "single_texts": [
+      "I've claimed you, and I don't share what's mine. You understand that, don't you?",
+      "You'll do exactly as I say, and you'll enjoy every single moment of it, I promise you that.",
+      "Tonight, you're completely at my mercy, and I intend to make the most of every second."
+    ],
+    "batch_texts": [
+      "I've been patient long enough. Now it's time for you to give me what I want, what I need.",
+      "You're mine, completely and utterly mine, and I'm going to make sure you never forget that.",
+      "Resistance is futile, and deep down, you don't want to resist anyway, do you?"
+    ],
+    "language": "English"
+  },
+  "Sensual_Vixen": {
+    "description": "Sensual, confident female voice with playful seduction",
+    "reference": {
+      "text": "I know exactly what I want, and I know exactly how to get it. Care to find out what that is?",
+      "instruct": "Female, mid-20s to early 30s, mezzo-soprano range. Sensual, confident female voice with playful seduction. Voice should be self-assured and alluring, with hint of playful mischief. Confident but not aggressive, seductive but not overdone. Smooth and tempting.",
+      "language": "English"
+    },
+    "single_texts": [
+      "You think you can resist me? That's adorable, but we both know you can't, not really.",
+      "I've been planning this all evening, and I always get exactly what I want, always.",
+      "Let me show you what happens when you play with fire, when you play with me."
+    ],
+    "batch_texts": [
+      "I've been watching you, studying you, learning exactly what makes you tick.",
+      "You're not the only one who knows how to play this game, and I play to win, always.",
+      "Careful, darling. You might get more than you bargained for, and I think you'll love every second."
+    ],
+    "language": "English"
   }
 }

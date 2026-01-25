@@ -66,5 +66,158 @@
       "Speak with overwhelming joy",
       "Speak with enthusiastic urgency"
     ]
+  },
+  "Sultry_Femme_Fatale": {
+    "language": "English",
+    "description": "Sultry, seductive female voice with breathy undertones",
+    "single_text": "Come closer, darling. I've been waiting for you all night. Don't keep me waiting any longer.",
+    "single_instruct": "Speak in a sultry, seductive female voice with breathy undertones. Lower your pitch slightly, speak slowly and deliberately with a hint of desire.",
+    "batch_texts": [
+      "You have no idea how much I've been thinking about you.",
+      "The way you look at me makes my heart race.",
+      "Tonight, I want to show you exactly what I've been dreaming about."
+    ],
+    "batch_languages": ["English", "English", "English"],
+    "batch_instructs": [
+      "Speak with longing and anticipation, breathy and soft",
+      "Speak with passion and intensity, voice slightly husky",
+      "Speak with seductive promise, slow and deliberate"
+    ]
+  },
+  "Passionate_Siren": {
+    "language": "English",
+    "description": "Passionate, intense female voice with emotional depth",
+    "single_text": "I can't resist you any longer. Every touch, every glance drives me wild with desire.",
+    "single_instruct": "Speak in a passionate, intense female voice with emotional depth. Let your voice convey raw desire and longing, with slight breathlessness.",
+    "batch_texts": [
+      "Your presence alone sets my entire body on fire.",
+      "I've never wanted anyone the way I want you right now.",
+      "Take me, make me yours completely."
+    ],
+    "batch_languages": ["English", "English", "English"],
+    "batch_instructs": [
+      "Speak with burning desire, voice trembling slightly with emotion",
+      "Speak with urgent need, breathy and intense",
+      "Speak with surrender and passion, voice soft but determined"
+    ]
+  },
+  "Whispering_Temptress": {
+    "language": "English",
+    "description": "Soft, whispering female voice with intimate undertones",
+    "single_text": "Shh, come here. I want to tell you a secret... something I've been keeping just for you.",
+    "single_instruct": "Speak in a soft, whispering female voice meant for intimate moments. Keep your voice low and close, as if sharing a secret in the dark.",
+    "batch_texts": [
+      "I've been imagining this moment all day long.",
+      "Your touch is everything I've been craving.",
+      "Let me show you how much I want you."
+    ],
+    "batch_languages": ["English", "English", "English"],
+    "batch_instructs": [
+      "Speak in a hushed, intimate whisper with anticipation",
+      "Speak softly with desire, voice barely above a whisper",
+      "Speak in a seductive whisper, slow and deliberate"
+    ]
+  },
+  "Deep_Seductive_Male": {
+    "language": "English",
+    "description": "Deep, seductive male voice with commanding presence",
+    "single_text": "You're mine tonight, and I'm not letting you go. Not until I've had my fill of you.",
+    "single_instruct": "Speak in a deep, seductive male voice with commanding presence. Lower your voice, speak with confidence and desire, letting each word carry weight.",
+    "batch_texts": [
+      "I've been watching you, wanting you, all evening long.",
+      "The way you move drives me absolutely insane.",
+      "Come here, let me show you exactly what I've been thinking about."
+    ],
+    "batch_languages": ["English", "English", "English"],
+    "batch_instructs": [
+      "Speak with possessive desire, voice deep and commanding",
+      "Speak with intense longing, voice husky with need",
+      "Speak with seductive authority, slow and deliberate"
+    ]
+  },
+  "Passionate_Romantic_Male": {
+    "language": "English",
+    "description": "Passionate, romantic male voice with emotional intensity",
+    "single_text": "You're beautiful, absolutely breathtaking. I can't believe you're here with me, that you're mine.",
+    "single_instruct": "Speak in a passionate, romantic male voice with emotional intensity. Let your voice convey deep affection mixed with desire, warm and sincere.",
+    "batch_texts": [
+      "Every moment with you feels like a dream I never want to wake from.",
+      "I've never felt this way about anyone before.",
+      "Let me love you the way you deserve to be loved."
+    ],
+    "batch_languages": ["English", "English", "English"],
+    "batch_instructs": [
+      "Speak with tender passion, voice warm and emotional",
+      "Speak with heartfelt intensity, voice full of feeling",
+      "Speak with loving devotion, voice soft but strong"
+    ]
+  },
+  "Smooth_Charmer": {
+    "language": "English",
+    "description": "Smooth, charming male voice with playful seduction",
+    "single_text": "Well, well, well. Look what we have here. You're even more stunning up close than I imagined.",
+    "single_instruct": "Speak in a smooth, charming male voice with playful seduction. Use a confident, slightly teasing tone with a hint of mischief.",
+    "batch_texts": [
+      "I've been trying to get you alone all night, and now here we are.",
+      "You know exactly what you're doing to me, don't you?",
+      "Let's make this night one we'll both remember forever."
+    ],
+    "batch_languages": ["English", "English", "English"],
+    "batch_instructs": [
+      "Speak with smooth confidence, voice playful and seductive",
+      "Speak with knowing charm, voice teasing and alluring",
+      "Speak with promising seduction, voice smooth and inviting"
+    ]
+  },
+  "Breathy_Enchantress": {
+    "language": "English",
+    "description": "Breathy, enchanting female voice with ethereal quality",
+    "single_text": "I've been dreaming of this moment. The way you make me feel... it's intoxicating.",
+    "single_instruct": "Speak in a breathy, enchanting female voice with an ethereal quality. Let your voice be soft and airy, as if speaking in a dream.",
+    "batch_texts": [
+      "Your touch sends shivers down my spine in the most delicious way.",
+      "I want to lose myself completely in you tonight.",
+      "Make me forget everything except for this moment, right here with you."
+    ],
+    "batch_languages": ["English", "English", "English"],
+    "batch_instructs": [
+      "Speak with breathy desire, voice soft and ethereal",
+      "Speak with dreamy passion, voice airy and enchanting",
+      "Speak with surrendering breathiness, voice barely above a whisper"
+    ]
+  },
+  "Dominant_Alpha": {
+    "language": "English",
+    "description": "Dominant, alpha male voice with commanding authority",
+    "single_text": "You belong to me now. And I take what's mine. No questions, no hesitation.",
+    "single_instruct": "Speak in a dominant, alpha male voice with commanding authority. Use a deep, powerful voice with absolute confidence and control.",
+    "batch_texts": [
+      "I've claimed you, and I don't share what's mine.",
+      "You'll do exactly as I say, and you'll enjoy every moment of it.",
+      "Tonight, you're completely at my mercy, and I intend to make the most of it."
+    ],
+    "batch_languages": ["English", "English", "English"],
+    "batch_instructs": [
+      "Speak with possessive dominance, voice deep and commanding",
+      "Speak with authoritative control, voice powerful and firm",
+      "Speak with confident dominance, voice slow and deliberate"
+    ]
+  },
+  "Sensual_Vixen": {
+    "language": "English",
+    "description": "Sensual, confident female voice with playful seduction",
+    "single_text": "I know exactly what I want, and I know exactly how to get it. Care to find out what that is?",
+    "single_instruct": "Speak in a sensual, confident female voice with playful seduction. Use a voice that's self-assured and alluring, with a hint of playful mischief.",
+    "batch_texts": [
+      "You think you can resist me? That's adorable, but we both know you can't.",
+      "I've been planning this all evening, and I always get what I want.",
+      "Let me show you what happens when you play with fire."
+    ],
+    "batch_languages": ["English", "English", "English"],
+    "batch_instructs": [
+      "Speak with confident seduction, voice playful and alluring",
+      "Speak with self-assured desire, voice smooth and tempting",
+      "Speak with dangerous charm, voice teasing and provocative"
+    ]
   }
 }
