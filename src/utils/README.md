@@ -7,7 +7,7 @@ This directory contains shared utility modules that provide common functionality
 | Module | Purpose | Key Functions |
 |--------|---------|---------------|
 | [`progress.py`](#progresspy) | Progress reporting & error handling | `print_progress()`, `print_error()`, `handle_*_error()` |
-| [`audio_utils.py`](#audio_utilspy) | Audio processing & format conversion | `save_audio()`, `save_wav()`, `play_audio()` |
+| [`audio_utils.py`](#audio_utilspy) | Audio processing & format conversion | `save_audio()`, `save_wav()`, `play_audio()`, `normalize_audio()`, `adjust_volume()` |
 | [`cli_args.py`](#cli_argspy) | Command-line argument parsing | `create_standard_parser()`, `add_common_args()` |
 | [`config_loader.py`](#config_loaderpy) | JSON configuration management | `load_voice_clone_profiles()`, `load_json_config()` |
 | [`model_utils.py`](#model_utilspy) | ML model loading & device management | `load_voice_clone_model()`, `get_device()` |
@@ -50,7 +50,9 @@ except Exception as e:
 **Key Functions**:
 - `ensure_output_dir(output_path)` - Create output directories if they don't exist
 - `save_wav(audio_data, sample_rate, output_path)` - Save audio as WAV file
-- `save_audio(audio_data, sample_rate, output_path, format="wav", bitrate="192k")` - Save audio in specified format
+- `save_audio(audio_data, sample_rate, output_path, format="wav", bitrate="192k", normalize=False, volume_adjust=None)` - Save audio in specified format with optional normalization
+- `normalize_audio(audio_data, target_level=0.95, method="peak")` - Normalize audio to target level (balances quiet/loud voices)
+- `adjust_volume(audio_data, volume_factor)` - Adjust audio volume by multiplication factor
 - `play_audio(file_path, no_play=False)` - Play audio file with fallback options
 - `get_audio_info(file_path)` - Get audio file metadata (duration, size, etc.)
 
@@ -60,13 +62,25 @@ except Exception as e:
 
 **Usage Example**:
 ```python
-from .utils.audio_utils import save_audio, play_audio
+from .utils.audio_utils import save_audio, play_audio, normalize_audio, adjust_volume
 
 # Save as WAV
 save_audio(audio_data, sample_rate, "output/voice.wav")
 
 # Save as MP3 with custom bitrate
 save_audio(audio_data, sample_rate, "output/voice.mp3", format="mp3", bitrate="320k")
+
+# Save with volume normalization (balances quiet voices)
+save_audio(audio_data, sample_rate, "output/voice.wav", normalize=True)
+
+# Save with manual volume boost
+save_audio(audio_data, sample_rate, "output/voice.wav", volume_adjust=1.5)
+
+# Normalize audio manually
+normalized = normalize_audio(quiet_audio, target_level=0.95)
+
+# Adjust volume manually
+boosted = adjust_volume(audio, volume_factor=1.3)
 
 # Play the audio
 play_audio("output/voice.wav")

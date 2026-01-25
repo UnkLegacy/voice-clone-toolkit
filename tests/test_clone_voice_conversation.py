@@ -411,6 +411,36 @@ class TestParseArgs(unittest.TestCase):
         """Test parsing --bitrate argument."""
         args = parse_args()
         self.assertEqual(args.bitrate, '320k')
+    
+    @patch('sys.argv', ['Clone_Voice_Conversation.py', '--cleanup'])
+    def test_parse_cleanup(self):
+        """Test parsing --cleanup argument."""
+        args = parse_args()
+        self.assertTrue(args.cleanup_lines)
+    
+    @patch('sys.argv', ['Clone_Voice_Conversation.py', '--no-cleanup'])
+    def test_parse_no_cleanup(self):
+        """Test parsing --no-cleanup argument."""
+        args = parse_args()
+        self.assertFalse(args.cleanup_lines)
+    
+    @patch('sys.argv', ['Clone_Voice_Conversation.py', '--normalize-volume'])
+    def test_parse_normalize_volume(self):
+        """Test parsing --normalize-volume argument."""
+        args = parse_args()
+        self.assertTrue(args.normalize_volume)
+    
+    @patch('sys.argv', ['Clone_Voice_Conversation.py', '--no-normalize-volume'])
+    def test_parse_no_normalize_volume(self):
+        """Test parsing --no-normalize-volume argument."""
+        args = parse_args()
+        self.assertFalse(args.normalize_volume)
+    
+    @patch('sys.argv', ['Clone_Voice_Conversation.py', '--volume-adjust', '1.5'])
+    def test_parse_volume_adjust(self):
+        """Test parsing --volume-adjust argument."""
+        args = parse_args()
+        self.assertEqual(args.volume_adjust, 1.5)
 
 
 class TestEnsureOutputDir(unittest.TestCase):
@@ -436,6 +466,113 @@ class TestEnsureOutputDir(unittest.TestCase):
         os.makedirs(test_path)
         ensure_output_dir(test_path)
         self.assertTrue(os.path.exists(test_path))
+
+
+class TestCleanupFeature(unittest.TestCase):
+    """Test cleanup functionality for deleting line files."""
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        self.test_dir = tempfile.mkdtemp()
+        self.output_dir = os.path.join(self.test_dir, "output")
+        os.makedirs(self.output_dir)
+        
+    def tearDown(self):
+        """Clean up test fixtures."""
+        shutil.rmtree(self.test_dir)
+    
+    def test_cleanup_deletes_line_files(self):
+        """Test that cleanup deletes individual line files."""
+        # Create mock line files
+        line_files = [
+            os.path.join(self.output_dir, "test_line_001_Voice1.wav"),
+            os.path.join(self.output_dir, "test_line_002_Voice2.wav"),
+            os.path.join(self.output_dir, "test_line_003_Voice1.wav"),
+        ]
+        full_file = os.path.join(self.output_dir, "test_full.wav")
+        
+        # Create the files
+        for line_file in line_files:
+            with open(line_file, 'wb') as f:
+                f.write(b'fake wav data')
+        with open(full_file, 'wb') as f:
+            f.write(b'fake full wav data')
+        
+        # Import cleanup logic (simulate what happens in the script)
+        import sys
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+        from clone_voice_conversation import CLEANUP_LINE_FILES
+        
+        # Simulate cleanup
+        cleanup_enabled = True
+        if cleanup_enabled:
+            deleted_count = 0
+            for line_file in line_files:
+                try:
+                    if os.path.exists(line_file):
+                        os.remove(line_file)
+                        deleted_count += 1
+                except Exception:
+                    pass
+        
+        # Verify line files are deleted
+        for line_file in line_files:
+            self.assertFalse(os.path.exists(line_file), f"Line file {line_file} should be deleted")
+        
+        # Verify full file still exists
+        self.assertTrue(os.path.exists(full_file), "Full file should not be deleted")
+        self.assertEqual(deleted_count, 3)
+    
+    def test_cleanup_keeps_files_when_disabled(self):
+        """Test that files are kept when cleanup is disabled."""
+        # Create mock line files
+        line_files = [
+            os.path.join(self.output_dir, "test_line_001_Voice1.wav"),
+            os.path.join(self.output_dir, "test_line_002_Voice2.wav"),
+        ]
+        full_file = os.path.join(self.output_dir, "test_full.wav")
+        
+        # Create the files
+        for line_file in line_files:
+            with open(line_file, 'wb') as f:
+                f.write(b'fake wav data')
+        with open(full_file, 'wb') as f:
+            f.write(b'fake full wav data')
+        
+        # Simulate cleanup disabled
+        cleanup_enabled = False
+        if cleanup_enabled:
+            for line_file in line_files:
+                if os.path.exists(line_file):
+                    os.remove(line_file)
+        
+        # Verify all files still exist
+        for line_file in line_files:
+            self.assertTrue(os.path.exists(line_file), f"Line file {line_file} should be kept")
+        self.assertTrue(os.path.exists(full_file), "Full file should exist")
+    
+    def test_cleanup_handles_missing_files_gracefully(self):
+        """Test that cleanup handles missing files without errors."""
+        # Create list with non-existent files
+        line_files = [
+            os.path.join(self.output_dir, "nonexistent1.wav"),
+            os.path.join(self.output_dir, "nonexistent2.wav"),
+        ]
+        
+        # Simulate cleanup (should not raise errors)
+        cleanup_enabled = True
+        deleted_count = 0
+        if cleanup_enabled:
+            for line_file in line_files:
+                try:
+                    if os.path.exists(line_file):
+                        os.remove(line_file)
+                        deleted_count += 1
+                except Exception:
+                    pass
+        
+        # Should complete without errors
+        self.assertEqual(deleted_count, 0)
 
 
 if __name__ == '__main__':

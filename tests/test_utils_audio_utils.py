@@ -17,6 +17,8 @@ from src.utils.audio_utils import (
     save_audio,
     play_audio,
     get_audio_info,
+    normalize_audio,
+    adjust_volume,
     PYDUB_AVAILABLE,
     playsound
 )
@@ -193,6 +195,140 @@ class TestAudioUtilities(unittest.TestCase):
         self.assertEqual(result["sample_rate"], self.test_sample_rate)
         self.assertEqual(result["channels"], 1)
         self.assertEqual(result["bit_depth"], 16)
+
+
+class TestVolumeNormalization(unittest.TestCase):
+    """Test volume normalization and adjustment functions."""
+    
+    def setUp(self):
+        """Set up test fixtures."""
+        self.temp_dir = tempfile.mkdtemp()
+        
+    def tearDown(self):
+        """Clean up test fixtures."""
+        import shutil
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
+    
+    def test_normalize_audio_peak_normalization(self):
+        """Test peak normalization of audio."""
+        # Create quiet audio (low amplitude)
+        quiet_audio = np.array([0.1, 0.2, -0.1, -0.2, 0.15], dtype=np.float32)
+        
+        # Normalize to 95% peak
+        normalized = normalize_audio(quiet_audio, target_level=0.95, method="peak")
+        
+        # Check that peak is approximately 0.95
+        peak = np.max(np.abs(normalized))
+        self.assertAlmostEqual(peak, 0.95, places=2)
+        # Check that values are clipped to [-1, 1]
+        self.assertTrue(np.all(normalized >= -1.0))
+        self.assertTrue(np.all(normalized <= 1.0))
+    
+    def test_normalize_audio_int16(self):
+        """Test normalization with int16 audio data."""
+        # Create quiet int16 audio
+        quiet_audio = np.array([1000, 2000, -1000, -2000], dtype=np.int16)
+        
+        # Normalize
+        normalized = normalize_audio(quiet_audio, target_level=0.95, method="peak")
+        
+        # Should still be int16
+        self.assertEqual(normalized.dtype, np.int16)
+        # Peak should be approximately 95% of int16 max
+        peak = np.max(np.abs(normalized))
+        expected_peak = int(0.95 * 32767)
+        self.assertAlmostEqual(peak, expected_peak, delta=100)
+    
+    def test_normalize_audio_silent_audio(self):
+        """Test normalization handles silent audio gracefully."""
+        silent_audio = np.array([0.0, 0.0, 0.0], dtype=np.float32)
+        
+        # Should return original (no division by zero)
+        normalized = normalize_audio(silent_audio, target_level=0.95)
+        
+        np.testing.assert_array_equal(normalized, silent_audio)
+    
+    def test_adjust_volume_boost(self):
+        """Test volume adjustment with boost factor."""
+        audio = np.array([0.5, 0.3, -0.4], dtype=np.float32)
+        
+        # Boost by 50%
+        adjusted = adjust_volume(audio, volume_factor=1.5)
+        
+        # Check values are multiplied correctly
+        expected = audio * 1.5
+        np.testing.assert_array_almost_equal(adjusted, expected, decimal=5)
+        # Check clipping
+        self.assertTrue(np.all(adjusted >= -1.0))
+        self.assertTrue(np.all(adjusted <= 1.0))
+    
+    def test_adjust_volume_reduction(self):
+        """Test volume adjustment with reduction factor."""
+        audio = np.array([0.8, 0.6, -0.7], dtype=np.float32)
+        
+        # Reduce by 20%
+        adjusted = adjust_volume(audio, volume_factor=0.8)
+        
+        # Check values are multiplied correctly
+        expected = audio * 0.8
+        np.testing.assert_array_almost_equal(adjusted, expected, decimal=5)
+    
+    def test_adjust_volume_int16(self):
+        """Test volume adjustment with int16 audio."""
+        audio = np.array([10000, 20000, -15000], dtype=np.int16)
+        
+        # Boost by 50%
+        adjusted = adjust_volume(audio, volume_factor=1.5)
+        
+        # Should still be int16
+        self.assertEqual(adjusted.dtype, np.int16)
+        # Values should be approximately 1.5x (clipped to int16 range)
+        self.assertTrue(np.all(adjusted >= -32767))
+        self.assertTrue(np.all(adjusted <= 32767))
+    
+    def test_adjust_volume_clipping(self):
+        """Test that volume adjustment prevents clipping."""
+        # Create audio that would clip if not handled
+        audio = np.array([0.8, 0.9, -0.85], dtype=np.float32)
+        
+        # Boost by 2x (would exceed 1.0)
+        adjusted = adjust_volume(audio, volume_factor=2.0)
+        
+        # Should be clipped to [-1, 1]
+        self.assertTrue(np.all(adjusted >= -1.0))
+        self.assertTrue(np.all(adjusted <= 1.0))
+        # Some values should be at the limit
+        self.assertTrue(np.any(np.abs(adjusted) >= 0.99))
+    
+    def test_save_audio_with_normalization(self):
+        """Test save_audio with normalization enabled."""
+        audio_data = np.array([0.1, 0.2, -0.1, -0.2], dtype=np.float32)
+        output_path = os.path.join(self.temp_dir, "normalized.wav")
+        
+        # Save with normalization
+        result_path = save_audio(
+            output_path, audio_data, 22050, 
+            output_format="wav", normalize=True, target_level=0.95
+        )
+        
+        # File should be created
+        self.assertTrue(os.path.exists(result_path))
+        # Should be WAV format
+        self.assertTrue(result_path.endswith('.wav'))
+    
+    def test_save_audio_with_volume_adjust(self):
+        """Test save_audio with volume adjustment."""
+        audio_data = np.array([0.3, 0.4, -0.3], dtype=np.float32)
+        output_path = os.path.join(self.temp_dir, "adjusted.wav")
+        
+        # Save with volume boost
+        result_path = save_audio(
+            output_path, audio_data, 22050,
+            output_format="wav", volume_adjust=1.5
+        )
+        
+        # File should be created
+        self.assertTrue(os.path.exists(result_path))
 
 
 if __name__ == '__main__':

@@ -14,6 +14,7 @@ Features:
 - Support for both inline scripts and script files
 - Automatic volume normalization (enabled by default) - balances quiet voices (like DougDoug, Grandma) 
   with louder ones. Each voice is normalized to the same peak level, so all voices end up balanced.
+- Optional cleanup of individual line files - delete line WAV files after concatenation, keeping only the full file
 
 Voice profiles are automatically loaded from:
 - config/voice_clone_profiles.json (reference audio + transcript)
@@ -48,7 +49,7 @@ print_progress = utils.print_progress
 print_error = utils.print_error
 handle_fatal_error = utils.handle_fatal_error
 handle_processing_error = utils.handle_processing_error
-save_audio = utils.save_audio
+# save_audio is defined locally below (with normalization support)
 play_audio = utils.play_audio
 ensure_output_dir = utils.ensure_output_dir
 load_json_config = utils.load_json_config
@@ -100,6 +101,7 @@ CONCATENATE_AUDIO = True                 # Set to False to keep lines separate o
 NORMALIZE_VOLUME = True                  # Set to True to automatically balance volume levels across all voices (recommended)
                                         # Each voice is normalized to 95% peak level, so quiet voices (like DougDoug, Grandma)
                                         # are boosted and loud voices are reduced to match. All voices end up at the same level.
+CLEANUP_LINE_FILES = False              # Set to True to delete individual line WAV files after concatenation, keeping only the full file
 
 # =============================================================================
 # END CONFIGURATION SECTION
@@ -225,7 +227,10 @@ def save_wav(filepath: str, audio_data: np.ndarray, sample_rate: int):
         wav_file.writeframes(audio_data.tobytes())
 
 
-def save_audio(filepath: str, audio_data: np.ndarray, sample_rate: int, output_format: str = "wav", bitrate: str = "192k"):
+def save_audio(filepath: str, audio_data: np.ndarray, sample_rate: int, 
+               output_format: str = "wav", bitrate: str = "192k",
+               normalize: bool = False, target_level: float = 0.95,
+               volume_adjust: Optional[float] = None):
     """
     Save audio data to file in specified format (WAV or MP3).
     
@@ -235,10 +240,21 @@ def save_audio(filepath: str, audio_data: np.ndarray, sample_rate: int, output_f
         sample_rate: Sample rate in Hz
         output_format: Output format ("wav" or "mp3")
         bitrate: Bitrate for MP3 encoding (e.g., "192k", "320k")
+        normalize: If True, normalize audio to target_level before saving
+        target_level: Target peak level for normalization (0.0 to 1.0)
+        volume_adjust: Optional volume adjustment factor (e.g., 1.5 for +50%, 0.8 for -20%)
     
     Returns:
         str: Final output filepath (with correct extension)
     """
+    # Apply volume adjustment if specified
+    if volume_adjust is not None:
+        audio_data = utils.adjust_volume(audio_data, volume_adjust)
+    
+    # Apply normalization if requested
+    if normalize:
+        audio_data = utils.normalize_audio(audio_data, target_level=target_level)
+    
     # Always save as WAV first
     wav_path = str(Path(filepath).with_suffix('.wav'))
     save_wav(wav_path, audio_data, sample_rate)
@@ -704,6 +720,24 @@ Examples:
         help="Manual volume adjustment factor applied to all voices (e.g., 1.5 for +50%% boost, 0.8 for -20%% reduction). Applied before normalization if --normalize-volume is used. Useful for fine-tuning overall volume levels."
     )
     
+    # Cleanup arguments (defaults to CLEANUP_LINE_FILES config value)
+    cleanup_group = parser.add_mutually_exclusive_group()
+    cleanup_group.add_argument(
+        "--cleanup",
+        "--cleanup-lines",
+        dest="cleanup_lines",
+        action="store_true",
+        default=None,  # None means "use config default"
+        help=f"Delete individual line WAV files after concatenation, keeping only the full file. Default: {CLEANUP_LINE_FILES}."
+    )
+    cleanup_group.add_argument(
+        "--no-cleanup",
+        dest="cleanup_lines",
+        action="store_false",
+        default=None,  # None means "use config default"
+        help="Keep individual line WAV files after concatenation (opposite of --cleanup)."
+    )
+    
     return parser.parse_args()
 
 
@@ -912,6 +946,20 @@ def main():
                     output_format=args.output_format, bitrate=args.bitrate
                 )
                 last_concatenated_file = final_concat_path
+                
+                # Cleanup individual line files if requested
+                cleanup_lines = args.cleanup_lines if args.cleanup_lines is not None else CLEANUP_LINE_FILES
+                if cleanup_lines:
+                    print_progress("Cleaning up individual line files...")
+                    deleted_count = 0
+                    for line_file in audio_files:
+                        try:
+                            if os.path.exists(line_file):
+                                os.remove(line_file)
+                                deleted_count += 1
+                        except Exception as e:
+                            print_progress(f"Warning: Could not delete {line_file}: {e}")
+                    print_progress(f"Deleted {deleted_count} line file(s), kept full file: {final_concat_path}")
             
             if batch_runs > 1:
                 print("\n" + "-"*80)

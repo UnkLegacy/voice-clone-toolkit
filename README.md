@@ -85,6 +85,8 @@ src/
 - **Audio Playback**: Automatic playback of generated audio (optional)
 - **Multiple Profiles**: Store and switch between multiple voice profiles easily
 - **Multiple Audio Formats**: Output as WAV or MP3 with configurable bitrate
+- **Volume Normalization**: Automatic volume balancing to ensure all voices are at consistent levels
+- **File Cleanup**: Optional cleanup of individual line files after concatenation (keep only full file)
 - **Modular Architecture**: Clean, maintainable codebase with shared utility modules
   - **Audio Processing**: Centralized audio format handling, conversion, and playback
   - **Configuration Management**: Unified JSON profile loading and validation
@@ -822,6 +824,12 @@ python src/clone_voice_conversation.py --no-play
 
 # Keep lines separate (no concatenation)
 python src/clone_voice_conversation.py --no-concatenate
+
+# Clean up individual line files after concatenation (keep only full file)
+python src/clone_voice_conversation.py --cleanup
+
+# Normalize volume levels to balance quiet voices
+python src/clone_voice_conversation.py --normalize-volume
 ```
 
 ### Configuration
@@ -884,6 +892,11 @@ output/
 | `--list-scripts` | List all available scripts | `--list-scripts` |
 | `--no-play` | Skip audio playback | `--no-play` |
 | `--no-concatenate` | Don't create combined audio file | `--no-concatenate` |
+| `--cleanup` | Delete individual line files after concatenation (keep only full file) | `--cleanup` |
+| `--no-cleanup` | Keep individual line files (opposite of --cleanup) | `--no-cleanup` |
+| `--normalize-volume` | Normalize volume levels to balance quiet voices with louder ones | `--normalize-volume` |
+| `--no-normalize-volume` | Disable volume normalization | `--no-normalize-volume` |
+| `--volume-adjust FACTOR` | Manual volume adjustment (e.g., 1.5 for +50%, 0.8 for -20%) | `--volume-adjust 1.3` |
 
 ### Example Scripts
 

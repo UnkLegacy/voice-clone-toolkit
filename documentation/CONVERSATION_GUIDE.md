@@ -222,7 +222,52 @@ Useful for:
 - Selective line replacement
 - Custom post-processing
 
-### Example 4: Create Your Own Script
+### Example 4: Cleanup Line Files
+
+```bash
+# Delete individual line files after concatenation (keep only full file)
+python src/clone_voice_conversation.py --cleanup
+```
+
+This generates all files normally, but after creating the concatenated `_full.wav` file, it deletes all individual line files.
+
+**Before cleanup:**
+```
+output/Conversations/example_conversation/
+├── example_conversation_line_001_DougDoug.wav
+├── example_conversation_line_002_Example_Grandma.wav
+├── example_conversation_line_003_DougDoug.wav
+└── example_conversation_full.wav
+```
+
+**After cleanup:**
+```
+output/Conversations/example_conversation/
+└── example_conversation_full.wav  # Only this remains
+```
+
+Useful for:
+- Saving disk space
+- Final production files (no need for individual lines)
+- Cleaner output directories
+
+**Note:** Cleanup only works when concatenation is enabled. If you use `--no-concatenate`, cleanup is ignored.
+
+### Example 5: Volume Normalization
+
+```bash
+# Balance quiet voices (like DougDoug, Grandma) with louder ones
+python src/clone_voice_conversation.py --normalize-volume
+```
+
+Normalizes all voices to the same peak level (95%) so quiet voices are boosted and loud voices are reduced. All voices end up balanced.
+
+Useful for:
+- Fixing volume imbalances between voices
+- Ensuring consistent audio levels
+- Professional-sounding conversations
+
+### Example 6: Create Your Own Script
 
 **Step 1:** Add voice profiles (if needed)
 
@@ -269,6 +314,65 @@ python src/clone_voice_conversation.py --script my_story
 ```
 
 ## Advanced Features
+
+### File Cleanup
+
+The cleanup feature automatically deletes individual line files after concatenation, keeping only the full conversation file. This is controlled by the `CLEANUP_LINE_FILES` configuration variable (default: `False`) or the `--cleanup` / `--no-cleanup` command-line arguments.
+
+**Configuration:**
+```python
+# In clone_voice_conversation.py
+CLEANUP_LINE_FILES = False  # Set to True to enable by default
+```
+
+**Command-line:**
+```bash
+# Enable cleanup
+python src/clone_voice_conversation.py --cleanup
+
+# Disable cleanup (keep line files)
+python src/clone_voice_conversation.py --no-cleanup
+```
+
+**When cleanup runs:**
+- Only after successful concatenation
+- Only if concatenation is enabled (`CONCATENATE_AUDIO = True` or not using `--no-concatenate`)
+- Deletes all files in the `audio_files` list (the individual line files)
+- Keeps the full concatenated file
+
+**Use cases:**
+- ✅ Production workflows where you only need the final file
+- ✅ Saving disk space on long conversations
+- ✅ Cleaner output directories
+- ❌ Not recommended if you need to edit individual lines later
+
+### Volume Normalization
+
+Volume normalization automatically balances audio levels across all voices. Each voice is normalized independently to 95% peak level, so quiet voices (like DougDoug, Grandma) are boosted and loud voices are reduced to match.
+
+**How it works:**
+- Each voice/clip is normalized independently to the same target level (95% peak)
+- All voices end up balanced against each other
+- If only DougDoug and Grandma: both normalized to 95% → balanced with each other
+- If you add Sohee: all three normalized to 95% → all balanced together
+
+**Configuration:**
+```python
+# In clone_voice_conversation.py
+NORMALIZE_VOLUME = True  # Set to False to disable by default
+```
+
+**Command-line:**
+```bash
+# Enable normalization (default if NORMALIZE_VOLUME = True)
+python src/clone_voice_conversation.py --normalize-volume
+
+# Disable normalization
+python src/clone_voice_conversation.py --no-normalize-volume
+
+# Manual volume adjustment (applied before normalization)
+python src/clone_voice_conversation.py --normalize-volume --volume-adjust 1.3
+```
 
 ### Silence Between Lines
 
