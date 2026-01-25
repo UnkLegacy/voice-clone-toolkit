@@ -23,6 +23,32 @@ Voice Design allows you to describe voice characteristics using natural language
 
 Unlike predefined speakers, Voice Design lets you create unique voices tailored to your specific needs.
 
+### Voice Design vs Voice Design Clone
+
+**Voice Design (`voice_design.py`):**
+- **Purpose:** Create **generic voice types** - "I want this type of speaker"
+- **Best For:** When you need a voice with specific characteristics but don't need perfect consistency
+- **Example Use Cases:**
+  - "A professional narrator voice"
+  - "An excited teenager voice"
+  - "A calm, soothing voice"
+- **Consistency:** Each generation may vary slightly - good for variety and flexibility
+- **When to Use:** One-off generations, varied content, when slight variation is acceptable
+
+**Voice Design Clone (`voice_design_clone.py`):**
+- **Purpose:** Create **specific character voices** - "I want this SPECIFIC character"
+- **Best For:** When you need a consistent, specific voice across many lines (like a character in a story)
+- **Example Use Cases:**
+  - "Amanda - a mid-30s adventurer with nasally, breathy voice"
+  - "Jonathan - a late 30s engineer with deep, gravelly voice"
+  - "Marcus - a confident professional narrator"
+- **Consistency:** Uses a reference audio to maintain the exact same voice across all generations
+- **When to Use:** Character voices in stories, consistent narration, when you need the same voice every time
+
+**Key Difference:** 
+- **Voice Design** = Generic voice types (flexible, may vary)
+- **Voice Design Clone** = Specific characters (consistent, same every time)
+
 ## Quick Start
 
 ### Basic Voice Design Instruction

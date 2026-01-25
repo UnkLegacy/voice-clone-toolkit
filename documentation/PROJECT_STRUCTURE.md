@@ -151,10 +151,50 @@ Contains GitHub-specific configuration:
 
 ### Configuration (`config/`)
 
-Contains JSON configuration files:
+Contains JSON configuration files for voice profiles and conversation scripts:
 
-- **voice_clone_profiles.json**: Voice profiles with reference audio, transcripts, and generation texts
+#### Voice Profile Files
+
+| File | Purpose | Use Case |
+|------|---------|----------|
+| **voice_clone_profiles.json** | Clone voices from reference audio | When you have existing audio samples to clone |
+| **custom_voice_profiles.json** | Pre-built speaker voices (Ryan, Sohee, etc.) | Quick access to built-in voices |
+| **voice_design_profiles.json** | Generic voice types from descriptions | "I want this type of speaker" - flexible, may vary |
+| **voice_design_clone_profiles.json** | Specific character voices | "I want this SPECIFIC character" - consistent every time |
+
+#### Understanding Profile Types
+
+**Voice Clone:**
+- Requires reference audio file + transcript
+- Clones the exact voice from the audio sample
+- Best for: Cloning existing voices you have audio of
+
+**Custom Voice:**
+- Uses pre-built speaker models (Ryan, Sohee, Aiden, etc.)
+- Quick and easy, no reference audio needed
+- Best for: Quick generation with built-in voices
+
+**Voice Design:**
+- Creates generic voice types from natural language descriptions
+- Each generation may vary slightly
+- Best for: "I want a professional narrator" or "I want an excited teenager"
+- **Use when:** You need a voice type but don't need perfect consistency
+
+**Voice Design Clone:**
+- Creates specific character voices with consistent results
+- Uses reference text + instruction to create a cloneable voice
+- Best for: "I want Amanda (specific character)" or "I want Jonathan (specific character)"
+- **Use when:** You need the same specific character voice across many lines
+
+**Key Difference:**
+- **Voice Design** = Generic voice types (flexible, may vary)
+- **Voice Design Clone** = Specific characters (consistent, same every time)
+
+#### Conversation Scripts
+
 - **conversation_scripts.json**: Conversation scripts with voices and dialogues
+- Can reference voices from ANY profile type
+- Supports inline scripts or external script files
 
 ### Input (`input/`)
 

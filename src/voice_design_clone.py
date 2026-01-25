@@ -6,8 +6,15 @@ This script demonstrates how to combine Voice Design and Voice Clone capabilitie
 2. Build a reusable clone prompt from that reference
 3. Generate new content with the designed voice consistently
 
+USE CASE: Specific character voices - "I want this SPECIFIC character"
+- Maintains exact same voice across all generations (perfect consistency)
+- Best for: Character voices in stories, consistent narration, when you need the same voice every time
+- Example: "Amanda - a mid-30s adventurer" or "Jonathan - a late 30s engineer"
+
 This workflow is ideal when you want a consistent voice across many lines
 without re-extracting features every time.
+
+For generic voice types where variation is acceptable, use voice_design.py instead.
 """
 
 import time

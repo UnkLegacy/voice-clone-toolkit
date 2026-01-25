@@ -18,10 +18,26 @@ All scripts are located in the `src/` directory:
 
 - **src/clone_voice.py** - Clone voices and generate speech with single or multiple voice profiles
 - **src/clone_voice_conversation.py** - Generate conversations between multiple cloned voices with script support
-- **src/voice_design.py** - Design custom voices using natural language descriptions
-- **src/voice_design_clone.py** - Combine voice design with cloning for consistent voices
+- **src/voice_design.py** - Design custom voices using natural language descriptions (generic voice types)
+- **src/voice_design_clone.py** - Combine voice design with cloning for consistent, specific character voices
 - **src/custom_voice.py** - Generate speech with custom voice models
 - **src/convert_audio_format.py** - Convert audio files between formats (WAV, MP3, etc.)
+
+### Understanding Voice Design vs Voice Design Clone
+
+**Voice Design (`voice_design.py`):**
+- **Purpose:** Create generic voice types ("I want this type of speaker")
+- **Use Case:** When you need a voice with specific characteristics but don't need consistency across multiple generations
+- **Example:** "A professional narrator voice" or "An excited teenager voice"
+- **Consistency:** Each generation may vary slightly - good for variety
+
+**Voice Design Clone (`voice_design_clone.py`):**
+- **Purpose:** Create specific character voices ("I want this SPECIFIC character")
+- **Use Case:** When you need a consistent, specific voice across many lines (like a character in a story)
+- **Example:** "Amanda - a mid-30s adventurer with nasally, breathy voice" or "Jonathan - a late 30s engineer with deep, gravelly voice"
+- **Consistency:** Uses a reference audio to maintain the exact same voice across all generations
+
+**Key Difference:** Voice Design is for voice types; Voice Design Clone is for specific characters that need to sound the same every time.
 
 ## 📋 Table of Contents
 
@@ -909,10 +925,14 @@ The project includes several example conversations:
 ### Creating Custom Scripts
 
 **Note:** Voices can come from ANY profile type! You can mix:
-- Voice clones (from `voice_clone_profiles.json`)
-- Custom voices (from `custom_voice_profiles.json` - e.g., Ryan, Sohee)
-- Voice designs (from `voice_design_profiles.json` - e.g., Incredulous_Panic)
-- Voice design+clone (from `voice_design_clone_profiles.json` - e.g., Confident_Professional)
+- Voice clones (from `voice_clone_profiles.json`) - Clone from reference audio
+- Custom voices (from `custom_voice_profiles.json` - e.g., Ryan, Sohee) - Pre-built speaker voices
+- Voice designs (from `voice_design_profiles.json` - e.g., Incredulous_Panic) - Generic voice types
+- Voice design+clone (from `voice_design_clone_profiles.json` - e.g., Confident_Professional) - Specific character voices
+
+**Understanding Profile Types:**
+- **Voice Design**: Generic voice types ("I want this type of speaker") - each generation may vary
+- **Voice Design Clone**: Specific character voices ("I want this SPECIFIC character") - consistent across all generations
 
 **Example mixing profile types:**
 ```json

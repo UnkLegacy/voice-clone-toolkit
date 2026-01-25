@@ -7,6 +7,14 @@ speech with custom voice characteristics described in natural language.
 Voice Design allows you to describe the desired voice characteristics (tone,
 emotion, style) using natural language instructions, giving you more control
 over the generated speech compared to predefined speakers.
+
+USE CASE: Generic voice types - "I want this type of speaker"
+- Each generation may vary slightly (good for variety)
+- Best for: One-off generations, varied content, when slight variation is acceptable
+- Example: "A professional narrator voice" or "An excited teenager voice"
+
+For specific character voices that need to be consistent across many lines,
+use voice_design_clone.py instead.
 """
 
 import time
