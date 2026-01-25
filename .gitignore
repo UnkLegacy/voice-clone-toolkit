@@ -83,3 +83,6 @@ desktop.ini
 *.tmp
 *.temp
 ~*
+
+# Custom user content (not for public repo)
+custom/

@@ -35,6 +35,7 @@ save_audio = utils.save_audio
 play_audio = utils.play_audio
 ensure_output_dir = utils.ensure_output_dir
 load_custom_voice_profiles = utils.load_custom_voice_profiles
+load_custom_voices_by_type = utils.load_custom_voices_by_type
 load_custom_voice_model = utils.load_custom_voice_model
 create_base_parser = utils.create_base_parser
 add_common_args = utils.add_common_args
@@ -248,6 +249,12 @@ def main():
     try:
         # Load custom voice profiles from JSON config
         voice_profiles = load_custom_voice_profiles(CUSTOM_VOICE_PROFILES_CONFIG)
+        
+        # Load and merge custom custom_voice profiles
+        custom_profiles = load_custom_voices_by_type('custom_voice')
+        if custom_profiles:
+            voice_profiles.update(custom_profiles)
+            print_progress(f"Loaded {len(custom_profiles)} custom custom_voice profiles")
         
         # Parse command-line arguments
         args = parse_args(voice_profiles)

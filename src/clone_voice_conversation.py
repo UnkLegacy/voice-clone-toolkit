@@ -339,6 +339,7 @@ def load_all_profiles() -> Dict[str, Any]:
     """
     Load all profile types and merge them into a single dictionary.
     Tracks the profile type for each voice.
+    Also loads custom profiles from custom/custom_voices.json if it exists.
     
     Returns:
         Dictionary with voice names as keys and profile data (with 'profile_type' field) as values
@@ -372,6 +373,18 @@ def load_all_profiles() -> Dict[str, Any]:
         for name, profile in design_clone_profiles.items():
             profile['profile_type'] = 'voice_design_clone'
             all_profiles[name] = profile
+    
+    # Load custom profiles from custom/custom_voices.json (if exists)
+    # This file can contain any profile type, each profile must have a "profile_type" field
+    CUSTOM_VOICES_CONFIG = "custom/custom_voices.json"
+    if os.path.exists(CUSTOM_VOICES_CONFIG):
+        custom_voices = load_json_config(CUSTOM_VOICES_CONFIG)
+        for name, profile in custom_voices.items():
+            # Use profile_type from the profile, or default to 'custom_voice' if not specified
+            profile_type = profile.get('profile_type', 'custom_voice')
+            profile['profile_type'] = profile_type
+            all_profiles[name] = profile
+            print_progress(f"Loaded custom profile: {name} (type: {profile_type})")
     
     return all_profiles
 
@@ -800,7 +813,15 @@ def main():
     voice_profiles = load_all_profiles()
     print_progress(f"Loaded {len(voice_profiles)} total profiles from all sources")
     
+    # Load main conversation scripts
     conversation_scripts = load_json_config(CONVERSATION_SCRIPTS_CONFIG)
+    
+    # Load custom scripts from custom/custom_scripts.json (if exists) and merge
+    CUSTOM_SCRIPTS_CONFIG = "custom/custom_scripts.json"
+    if os.path.exists(CUSTOM_SCRIPTS_CONFIG):
+        custom_scripts = load_json_config(CUSTOM_SCRIPTS_CONFIG)
+        conversation_scripts.update(custom_scripts)
+        print_progress(f"Loaded {len(custom_scripts)} custom scripts")
     
     # Handle --list-scripts
     if args.list_scripts:

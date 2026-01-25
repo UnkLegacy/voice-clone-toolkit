@@ -35,6 +35,14 @@ Comprehensive guide for running and writing unit tests:
 - Test coverage
 - Continuous integration setup
 
+### [Voice Design Examples](VOICE_DESIGN_EXAMPLES.md)
+Complete guide for creating custom voice characteristics using natural language instructions:
+- Voice attribute control (pitch, speed, volume, etc.)
+- Multiple control methods (single attribute, multi-attribute, natural language)
+- Examples by use case (narrator, emotional character, playful voice, etc.)
+- Best practices and troubleshooting
+- Advanced techniques for dynamic voice changes
+
 ## 🔙 Back to Main Documentation
 
 For general usage and quick start, see the main [README.md](../README.md) in the project root.

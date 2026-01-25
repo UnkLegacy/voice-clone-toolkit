@@ -246,6 +246,36 @@ def load_conversation_scripts(config_path: str) -> Dict[str, Any]:
     )
 
 
+def load_custom_voices_by_type(profile_type: str) -> Dict[str, Any]:
+    """
+    Load custom voices from custom/custom_voices.json filtered by profile type.
+    
+    Args:
+        profile_type: The profile type to filter by ('voice_clone', 'custom_voice', 
+                     'voice_design', 'voice_design_clone')
+        
+    Returns:
+        Dictionary of custom voice profiles matching the specified type
+    """
+    CUSTOM_VOICES_CONFIG = "custom/custom_voices.json"
+    if not os.path.exists(CUSTOM_VOICES_CONFIG):
+        return {}
+    
+    try:
+        custom_voices = load_json_config(CUSTOM_VOICES_CONFIG)
+        # Filter by profile_type and remove the profile_type field from the profile data
+        filtered_profiles = {}
+        for name, profile in custom_voices.items():
+            if profile.get('profile_type') == profile_type:
+                # Create a copy without the profile_type field (it's metadata, not part of the profile structure)
+                profile_copy = {k: v for k, v in profile.items() if k != 'profile_type'}
+                filtered_profiles[name] = profile_copy
+        return filtered_profiles
+    except Exception as e:
+        print_error(f"Error loading custom voices: {e}")
+        return {}
+
+
 def validate_profile_structure(profile: Dict[str, Any], 
                              required_fields: List[str],
                              profile_name: str = "Profile") -> bool:

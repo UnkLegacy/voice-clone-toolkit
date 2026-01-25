@@ -41,6 +41,7 @@ play_audio = utils.play_audio
 ensure_output_dir = utils.ensure_output_dir
 load_voice_clone_profiles = utils.load_voice_clone_profiles
 load_voice_clone_model = utils.load_voice_clone_model
+load_custom_voices_by_type = utils.load_custom_voices_by_type
 create_base_parser = utils.create_base_parser
 add_common_args = utils.add_common_args
 add_voice_selection_args = utils.add_voice_selection_args
@@ -408,6 +409,12 @@ def main():
     try:
         # Load voice profiles from JSON config
         voice_profiles = load_voice_clone_profiles(VOICE_PROFILES_CONFIG)
+        
+        # Load and merge custom voice_clone profiles
+        custom_profiles = load_custom_voices_by_type('voice_clone')
+        if custom_profiles:
+            voice_profiles.update(custom_profiles)
+            print_progress(f"Loaded {len(custom_profiles)} custom voice_clone profiles")
         
         # Parse command-line arguments
         args = parse_args(voice_profiles)

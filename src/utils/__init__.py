@@ -24,6 +24,7 @@ from .file_utils import (
 from .config_loader import (
     load_json_config, load_voice_clone_profiles, load_custom_voice_profiles,
     load_voice_design_profiles, load_voice_design_clone_profiles, load_conversation_scripts,
+    load_custom_voices_by_type,
     get_profile_choices, get_default_profile, validate_profile_structure
 )
 from .model_utils import (
@@ -57,6 +58,7 @@ __all__ = [
     # Configuration loading
     'load_json_config', 'load_voice_clone_profiles', 'load_custom_voice_profiles',
     'load_voice_design_profiles', 'load_voice_design_clone_profiles', 'load_conversation_scripts',
+    'load_custom_voices_by_type',
     'get_profile_choices', 'get_default_profile', 'validate_profile_structure',
     
     # Model utilities
