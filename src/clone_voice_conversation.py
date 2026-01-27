@@ -60,6 +60,7 @@ load_voice_design_clone_profiles = utils.load_voice_design_clone_profiles
 load_voice_clone_model = utils.load_voice_clone_model
 load_custom_voice_model = utils.load_custom_voice_model
 load_voice_design_model = utils.load_voice_design_model
+fix_pad_token_id = utils.fix_pad_token_id
 create_base_parser = utils.create_base_parser
 add_common_args = utils.add_common_args
 get_generation_modes = utils.get_generation_modes
@@ -415,6 +416,9 @@ def load_model(model_path: str = "Qwen_Models/Qwen3-TTS-12Hz-1.7B-Base") -> Qwen
             dtype=torch.bfloat16,
         )
     
+    # Fix pad_token_id warning by setting it explicitly
+    fix_pad_token_id(model)
+    
     print_progress("Model loaded successfully!")
     return model
 
@@ -550,6 +554,8 @@ def load_custom_voice_model(model_path: str = "Qwen_Models/Qwen3-TTS-12Hz-1.7B-C
         device_map={"": device},
         dtype=torch.bfloat16,
     )
+    # Fix pad_token_id warning by setting it explicitly
+    fix_pad_token_id(model)
     return model
 
 
@@ -561,6 +567,8 @@ def load_voice_design_model(model_path: str = "Qwen_Models/Qwen3-TTS-12Hz-1.7B-V
         device_map={"": device},
         dtype=torch.bfloat16,
     )
+    # Fix pad_token_id warning by setting it explicitly
+    fix_pad_token_id(model)
     return model
 
 

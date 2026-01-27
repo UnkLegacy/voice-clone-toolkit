@@ -42,6 +42,31 @@ def get_device() -> torch.device:
     return device
 
 
+def fix_pad_token_id(model: 'Qwen3TTSModel') -> None:
+    """
+    Fix pad_token_id warning by setting it explicitly in generation_config.
+    
+    This prevents the warning: "Setting `pad_token_id` to `eos_token_id` for open-end generation."
+    
+    Args:
+        model: The loaded Qwen3TTSModel instance
+    """
+    try:
+        if hasattr(model, 'generation_config') and model.generation_config is not None:
+            # Try to get pad_token_id from tokenizer first
+            if hasattr(model, 'tokenizer') and model.tokenizer is not None:
+                if hasattr(model.tokenizer, 'pad_token_id') and model.tokenizer.pad_token_id is not None:
+                    model.generation_config.pad_token_id = model.tokenizer.pad_token_id
+                    return
+            
+            # Fallback to eos_token_id if tokenizer doesn't have pad_token_id
+            if hasattr(model.generation_config, 'eos_token_id') and model.generation_config.eos_token_id is not None:
+                model.generation_config.pad_token_id = model.generation_config.eos_token_id
+    except Exception:
+        # If setting pad_token_id fails, continue anyway (non-critical)
+        pass
+
+
 def load_model_with_device(model_path: str, 
                           model_name: Optional[str] = None,
                           dtype: torch.dtype = torch.bfloat16,
@@ -99,6 +124,9 @@ def load_model_with_device(model_path: str,
                 device_map=device_map,
                 dtype=dtype,
             )
+        
+        # Fix pad_token_id warning by setting it explicitly
+        fix_pad_token_id(model)
         
         if show_progress:
             print_progress(f"{model_desc.capitalize()} loaded successfully!")

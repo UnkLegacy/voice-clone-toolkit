@@ -30,7 +30,8 @@ from .config_loader import (
 from .model_utils import (
     load_model_with_device, get_device, load_voice_clone_model,
     load_custom_voice_model, load_voice_design_model,
-    get_model_memory_usage, clear_gpu_cache, get_device_info, validate_model_path
+    get_model_memory_usage, clear_gpu_cache, get_device_info, validate_model_path,
+    fix_pad_token_id
 )
 from .cli_args import (
     create_standard_parser, create_base_parser, add_common_args, get_generation_modes,
@@ -65,6 +66,7 @@ __all__ = [
     'load_model_with_device', 'get_device', 'load_voice_clone_model',
     'load_custom_voice_model', 'load_voice_design_model',
     'get_model_memory_usage', 'clear_gpu_cache', 'get_device_info', 'validate_model_path',
+    'fix_pad_token_id',
     
     # CLI utilities
     'create_standard_parser', 'create_base_parser', 'add_common_args', 'get_generation_modes',
