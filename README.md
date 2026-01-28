@@ -34,7 +34,7 @@ All scripts are located in the `src/` directory:
 **Voice Design Clone (`voice_design_clone.py`):**
 - **Purpose:** Create specific character voices ("I want this SPECIFIC character")
 - **Use Case:** When you need a consistent, specific voice across many lines (like a character in a story)
-- **Example:** "Amanda - a mid-30s adventurer with nasally, breathy voice" or "Jonathan - a late 30s engineer with deep, gravelly voice"
+- **Example:** "Shannon - a mid-30s adventurer with nasally, breathy voice" or "Kevin - a late 30s engineer with deep, gravelly voice"
 - **Consistency:** Uses a reference audio to maintain the exact same voice across all generations
 
 **Key Difference:** Voice Design is for voice types; Voice Design Clone is for specific characters that need to sound the same every time.
